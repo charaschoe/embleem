@@ -5,7 +5,7 @@
     const demoAnimal = "Tiger";
 </script>
 
-<div class="container"></div>
+<div class="container">
     <h1>Willkommen zum Wildtier-Puzzle!</h1>
     <p>Klicke unten, um das Spiel zu starten.</p>
 

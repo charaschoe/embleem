@@ -6,25 +6,31 @@
     export let animal: string;
     export let rows = 3;
     export let cols = 3;
-    let imageUrl = '';
+    export let imageUrl = '';
     let hint = '';
     let revealedTiles = Array(rows * cols).fill(false);
     let guessedName = '';
     let isCorrect = false;
     export let counter = 0;
 
+    // Lädt das Bild und den Hinweis beim Mounten der Komponente
     onMount(async () => {
         const result = await fetchUnsplashImage(animal);
         if (result) {
             imageUrl = result;
-            const animalData = animalList.find(a => a.name.toLowerCase() === animal.toLowerCase());
-            hint = animalData?.description || 'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
+            const animalData = animalList.find(
+                (a) => a.name.toLowerCase() === animal.toLowerCase()
+            );
+            hint =
+                animalData?.description ||
+                'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
         } else {
             imageUrl = '/static/default-animal.jpg';
             hint = 'Keine Hinweise verfügbar.';
         }
     });
 
+    // Funktion zum Aufdecken einer Kachel
     function revealTile(index: number): void {
         if (!revealedTiles[index]) {
             revealedTiles[index] = true;
@@ -32,11 +38,15 @@
         }
     }
 
+    // Funktion zur Überprüfung der Benutzereingabe
     function checkGuess() {
-        const animalData = animalList.find(a => a.name.toLowerCase() === animal.toLowerCase());
+        const animalData = animalList.find(
+            (a) => a.name.toLowerCase() === animal.toLowerCase()
+        );
         if (animalData) {
-            isCorrect = animalData.synonyms.some(synonym =>
-                guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
+            isCorrect = animalData.synonyms.some(
+                (synonym) =>
+                    guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
             );
         } else {
             isCorrect = false;
@@ -44,6 +54,7 @@
     }
 </script>
 
+<!-- Puzzle-Container -->
 <div class="puzzle-container">
     <div class="grid" style="--cols: {cols}">
         {#each revealedTiles as revealed, index}
@@ -56,24 +67,27 @@
         {/each}
     </div>
 
+    <!-- Hinweisbox -->
     <div class="hint-box">
         <p><strong>Hinweis:</strong> {hint}</p>
     </div>
 </div>
 
+<!-- Eingabefeld für die Benutzereingabe -->
 <div class="guess-box">
     <input 
         type="text" 
-        placeholder="Enter animal name..." 
+        placeholder="Tiernamen eingeben..." 
         bind:value={guessedName} 
     />
-    <button on:click={checkGuess}>Check</button>
+    <button on:click={checkGuess}>Überprüfen</button>
 </div>
 
+<!-- Ergebnisanzeige -->
 {#if isCorrect}
-    <p class="success">Correct! The animal is a {animal}.</p>
+    <p class="success">Richtig! Das Tier ist ein {animal}.</p>
 {:else if guessedName}
-    <p class="error">Wrong answer. Try again!</p>
+    <p class="error">Leider falsch. Versuche es erneut!</p>
 {/if}
 
 <style>
