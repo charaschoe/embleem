@@ -1,5 +1,5 @@
 <script>
-  import PuzzleGrid from '../components/PuzzleGrid.svelte'; // Korrigierter Pfad
+  import PuzzleGrid from '../../components/PuzzleGrid.svelte'; // Korrekt: Zwei Ebenen nach oben
 </script>
 
 <h1>Puzzle-Spiel</h1>
