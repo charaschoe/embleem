@@ -1,169 +1,128 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { fetchUnsplashImage } from '../lib/unsplash.js';
-  import { animalList } from '../lib/animalList.js';
+    import { onMount } from 'svelte';
+    import { fetchUnsplashImage } from '../lib/unsplash.js';
+    import { animalList } from '../lib/animalList.js';
 
-  export let animal: string; // Name of the animal
-  let imageUrl = ''; // URL of the animal image
-  let hint = ''; // Image hint
-  let pieces = Array(9).fill(false); // Array for puzzle pieces (hidden)
-  let guessedName = ''; // User input
-  let isCorrect = false; // Status if name is correct
+    export let animal: string;
+    export let rows = 3;
+    export let cols = 3;
+    let imageUrl = '';
+    let hint = '';
+    let revealedTiles = Array(rows * cols).fill(false);
+    let guessedName = '';
+    let isCorrect = false;
+    export let counter = 0;
 
-  onMount(async () => {
-    const result = await fetchUnsplashImage(animal);
-    if (result) {
-      imageUrl = result;
-      hint = 'Try to guess the animal!';
-    } else {
-      imageUrl = '/static/default-animal.jpg'; // Fallback image
-      hint = 'No hints available.';
+    onMount(async () => {
+        const result = await fetchUnsplashImage(animal);
+        if (result) {
+            imageUrl = result;
+            const animalData = animalList.find(a => a.name.toLowerCase() === animal.toLowerCase());
+            hint = animalData?.description || 'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
+        } else {
+            imageUrl = '/static/default-animal.jpg';
+            hint = 'Keine Hinweise verfügbar.';
+        }
+    });
+
+    function revealTile(index: number): void {
+        if (!revealedTiles[index]) {
+            revealedTiles[index] = true;
+            counter += 1;
+        }
     }
-  });
 
-  function revealPiece(index: number): void {
-    pieces[index] = true; // Reveals the puzzle piece
-  }
-
-  function checkGuess() {
-    const animalData = animalList.find(a => a.name.toLowerCase() === animal.toLowerCase());
-    if (animalData) {
-      isCorrect = animalData.synonyms.some(synonym =>
-        guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
-      );
-    } else {
-      isCorrect = false;
+    function checkGuess() {
+        const animalData = animalList.find(a => a.name.toLowerCase() === animal.toLowerCase());
+        if (animalData) {
+            isCorrect = animalData.synonyms.some(synonym =>
+                guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
+            );
+        } else {
+            isCorrect = false;
+        }
     }
-  }
 </script>
 
 <div class="puzzle-container">
-   <!-- Puzzle-Blöcke -->
-   <div class="puzzle-grid">
-      {#each pieces as revealed, index}
-         <div 
-            class="puzzle-piece {revealed ? 'revealed' : ''}" 
-            on:click={() => revealPiece(index)}
-         >
-            {#if revealed}
-               <span></span> <!-- Leer, da der Block transparent wird -->
-            {:else}
-               ?
-            {/if}
-         </div>
-      {/each}
-   </div>
+    <div class="grid" style="--cols: {cols}">
+        {#each revealedTiles as revealed, index}
+            <div
+                class="tile {revealed ? 'revealed' : ''}"
+                on:click={() => revealTile(index)}
+                style="background-image: {revealed ? `url(${imageUrl})` : 'none'}">
+                {!revealed ? '?' : ''}
+            </div>
+        {/each}
+    </div>
 
-   <!-- Bild des Tieres -->
-   <div class="animal-image">
-      {#if imageUrl}
-         <img src={imageUrl} alt={animal} />
-      {:else}
-         <p>Bild wird geladen...</p>
-      {/if}
-   </div>
-
-   <!-- Hinweis -->
-   <div class="hint-box">
-      <p><strong>Hinweis:</strong> {hint}</p>
-   </div>
+    <div class="hint-box">
+        <p><strong>Hinweis:</strong> {hint}</p>
+    </div>
 </div>
 
-<!-- Eingabebox für den Tiernamen -->
 <div class="guess-box">
-   <input 
-      type="text" 
-      placeholder="Enter animal name..." 
-      bind:value={guessedName} 
-   />
-   <button on:click={checkGuess}>Check</button>
+    <input 
+        type="text" 
+        placeholder="Enter animal name..." 
+        bind:value={guessedName} 
+    />
+    <button on:click={checkGuess}>Check</button>
 </div>
 
 {#if isCorrect}
-   <p class="success">Correct! The animal is a {animal}.</p>
+    <p class="success">Correct! The animal is a {animal}.</p>
 {:else if guessedName}
-   <p class="error">Wrong answer. Try again!</p>
+    <p class="error">Wrong answer. Try again!</p>
 {/if}
 
 <style>
-/* Container für Puzzle und Bild */
-.puzzle-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    width: 300px;
-    margin: 0 auto; /* Zentriert den gesamten Container */
-}
+    .puzzle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 300px;
+        margin: 0 auto;
+    }
 
-/* Puzzle-Blöcke */
-.puzzle-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Drei Spalten */
-    gap: 2px;
-    width: 100%;
-    height: 300px; /* Feste Höhe für die Puzzle-Blöcke */
-}
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        gap: 10px;
+        width: 300px;
+        margin: auto;
+    }
 
-.puzzle-piece {
-    width: 100%;
-    height: 100%;
-    background-color: #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: solid 1px #999;
-    font-size: 16px;
-    cursor: pointer;
-}
+    .tile {
+        width: 100px;
+        height: 100px;
+        background-color: gray;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+    }
 
-.puzzle-piece:hover {
-    transform: scale(1.05);
-}
+    .tile.revealed {
+        background-size: cover;
+        background-position: center;
+    }
 
-.puzzle-piece.revealed {
-    background-color: transparent; /* Macht das Puzzleteil transparent */
-}
+    .hint-box {
+        margin-top: 15px;
+    }
 
-/* Bild des Tieres */
-.animal-image {
-    margin-top: 10px; /* Abstand zwischen Puzzle-Blöcken und Bild */
-}
+    .guess-box {
+        margin-top: 20px;
+    }
 
-.animal-image img {
-    width: 300px; /* Gleiche Breite wie die Puzzle-Blöcke */
-    height: 300px; /* Gleiche Höhe wie die Puzzle-Blöcke */
-    object-fit: cover; /* Zuschneiden auf quadratische Form */
-}
+    .success {
+        color: green;
+    }
 
-/* Hinweisbox */
-.hint-box {
-    margin-top: 15px;
-}
-
-.hint-box p {
-    font-size: 14px;
-}
-
-/* Eingabebox */
-.guess-box {
-    margin-top: 20px; /* Abstand unterhalb des Puzzles und Bildes */
-}
-
-.guess-box input {
-    padding: 8px;
-}
-
-.guess-box button {
-    padding: 8px;
-}
-
-.success {
-    color: green;
-}
-
-.error {
-    color: red;
-}
+    .error {
+        color: red;
+    }
 </style>
