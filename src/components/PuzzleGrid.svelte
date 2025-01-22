@@ -51,23 +51,17 @@
 
 <!-- Puzzle-Container -->
 <div class="puzzle-container">
-	<div class="grid"
+	<div
+		class="grid"
 		style="--cols: {cols}; background-image: url({imageUrl}); background-size: cover; background-position: center;"
 	>
 		{#each revealedTiles as revealed, index}
 			<div
 				class="tile {revealed ? 'revealed' : ''}"
 				on:click={() => revealTile(index)}
-				style="background-image: {revealed ? `url(${imageUrl})` : 'none'}"
-			>
-				{!revealed ? '?' : ''}
-			</div>
+			></div>
 		{/each}
 	</div>
-
-	// hier nicht mehr background-image rein, sondern nur noch grau zu transparent wechseln bei
-	classTile // hier nicht die kacheln mit den bildern bei klick befüllen sondern, im container
-	dahinter
 
 	<!-- Hinweisbox -->
 	<div class="hint-box">
@@ -89,53 +83,50 @@
 {/if}
 
 <style>
-	.puzzle-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		width: 300px;
-		margin: 0 auto;
-	}
+	puzzle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 300px;
+        margin: 0 auto;
+    }
 
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(var(--cols), 1fr);
-		gap: 10px;
-		width: 300px;
-		margin: auto;
-		background-color: red;
-	}
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        width: 300px;
+        height: 300px;
+        margin: auto;
+        background-size: cover;
+        background-position: center;
+    }
 
-	.tile {
-		width: 100px;
-		height: 100px;
-		background-color: gray;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 24px;
-		cursor: pointer;
-	}
+    .tile {
+        width: 100%;
+        height: 100%;
+        background-color: gray; /* Startfarbe der Kacheln */
+        cursor: pointer;
+        border: 1px solid #000; /* Optional für sichtbare Trennung */
+    }
 
-	.tile.revealed {
-		background-size: cover;
-		background-position: center;
-	}
+    .tile.revealed {
+        background-color: transparent; /* Transparent, um den Container-Hintergrund sichtbar zu machen */
+    }
 
-	.hint-box {
-		margin-top: 15px;
-	}
+    .hint-box {
+        margin-top: 15px;
+    }
 
-	.guess-box {
-		margin-top: 20px;
-	}
+    .guess-box {
+        margin-top: 20px;
+    }
 
-	.success {
-		color: green;
-	}
+    .success {
+        color: green;
+    }
 
-	.error {
-		color: red;
-	}
+    .error {
+        color: red;
+    }
 </style>
