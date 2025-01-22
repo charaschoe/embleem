@@ -14,8 +14,8 @@
 	let guessedName = '';
 	let isCorrect = false;
 	let playerName = '';
-	let counter = 0;
-	let countryInfo = null; // Speichert das Land und das Wappen
+	let counter = 0; // Anzahl der Versuche/Klicks
+	let countryInfo = null;
 
 	// Lädt das Bild und den Hinweis beim Mounten der Komponente
 	onMount(async () => {
@@ -28,7 +28,6 @@
 				animalData?.description ||
 				'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
 
-			// Land und Wappen abrufen
 			countryInfo = {
 				country: animalData?.country || 'Unbekannt',
 				coatOfArms: animalData?.coatOfArms || '/static/default-coat-of-arms.png'
@@ -42,11 +41,16 @@
 	function revealTile(index: number): void {
 		if (!revealedTiles[index]) {
 			revealedTiles[index] = true;
-			counter += 1;
+			counter += 1; // Erhöhe den Zähler bei jedem Klick
 		}
 	}
 
 	function checkGuess() {
+		if (playerName.trim() === '') {
+			alert('Bitte gib deinen Namen ein!');
+			return;
+		}
+
 		const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
 		if (animalData) {
 			isCorrect = animalData.synonyms.some(
@@ -89,7 +93,26 @@
 	<!-- Spielername -->
 	<div class="input-container">
 		<label for="player-name">Dein Name:</label>
-		<input id="player-name" type="text" bind:value={playerName} placeholder="Name eingeben..." />
+		<input
+			id="player-name"
+			type="text"
+			bind:value={playerName}
+			placeholder="Name eingeben..."
+			required
+		/>
+		{#if playerName.trim() === ''}
+			<p class="error">Bitte gib deinen Namen ein!</p>
+		{/if}
+	</div>
+
+	<!-- Tiername für Testzwecke -->
+	<div class="test-animal-name">
+		<p><strong>Tiername (für Tests):</strong> {animal}</p>
+	</div>
+
+	<!-- Dynamische Anzeige der Versuche -->
+	<div class="counter-box">
+		<p>Aufgedeckte Kacheln: {counter}/{rows * cols}</p>
 	</div>
 
 	<!-- Puzzle -->
@@ -161,7 +184,6 @@
 		grid-template-columns: repeat(var(--cols), 1fr);
 		width: 300px;
 		height: 300px;
-		margin-top: 10px; /* Korrigierter Wert */
 	}
 
 	.tile {
@@ -177,25 +199,15 @@
 		pointer-events: none; /* Deaktiviert weitere Klicks auf aufgedeckte Kacheln */
 	}
 
-	.counter-box {
-		margin-top: 15px;
-		font-size: 18px;
-		color: #333;
-	}
-
-	.hint-box {
-		margin-top: 15px;
-	}
-
-	.guess-box {
-		margin-top: 20px;
-	}
-
-	.success {
-		color: green;
-	}
-
 	.error {
 		color: red;
+		font-size: 0.9rem;
+		margin-top: 0.5rem;
+	}
+
+	.counter-box p {
+		font-size: 1rem;
+		color: #333333; /* Optional für bessere Sichtbarkeit */
+		margin-top: 10px;
 	}
 </style>
