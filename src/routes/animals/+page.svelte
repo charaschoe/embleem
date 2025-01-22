@@ -2,36 +2,63 @@
 	import { onMount } from 'svelte';
 
 	let animals = [];
-	let filter = 'all'; // Standardfilter: Zeige alle
+	let filter = ''; // Filtertext
 	let isLoading = true;
+	let errorMessage = '';
 
-	// API-Aufruf, um Nationaltiere und Wappen zu laden
-	async function fetchAnimals() {
+	// Funktion, um alle Tiere zu laden (mit Pagination)
+	async function fetchAllAnimals() {
+		const limit = 10; // Maximale Anzahl von Ergebnissen pro Anfrage
+		let offset = 0;
+		let hasMore = true;
+
 		try {
-			const response = await fetch(
-				'https://en.wikipedia.org/w/api.php?action=query&origin=*&format=json&prop=extracts|pageimages&exintro&explaintext&piprop=thumbnail&pithumbsize=100&titles=National_animal'
-			);
-			const data = await response.json();
-			const pages = data.query.pages;
+			while (hasMore) {
+				const response = await fetch(`https://api.api-ninjas.com/v1/animals?offset=${offset}`, {
+					headers: { 'X-Api-Key': 'J9h/6yC9ckxAbUK0p/9LFw==mgxejoWHqJOtyLcU' }
+				});
 
-			// Extrahiere relevante Daten aus der API-Antwort
-			animals = Object.values(pages).map((page) => ({
-				country: page.title,
-				description: page.extract,
-				image: page.thumbnail?.source || '/static/default-coat-of-arms.png'
-			}));
+				if (!response.ok) {
+					errorMessage = `Fehler beim Abrufen der Tiere: ${response.statusText}`;
+					console.error(errorMessage);
+					break;
+				}
+
+				const data = await response.json();
+
+				if (data.length === 0) {
+					hasMore = false; // Keine weiteren Ergebnisse
+				} else {
+					animals = [
+						...animals,
+						...data.map((animal) => ({
+							name: animal.name,
+							taxonomy: animal.taxonomy || 'Keine Taxonomie verfügbar',
+							image: animal.image_link || '/static/default-coat-of-arms.png',
+							location: animal.locations?.join(', ') || 'Unbekannt'
+						}))
+					];
+					offset += limit; // Nächste Seite laden
+				}
+			}
 		} catch (error) {
-			console.error('Fehler beim Abrufen der Nationaltiere:', error);
+			errorMessage = 'Ein Fehler ist aufgetreten. Bitte überprüfe deine API-Konfiguration.';
+			console.error('Fehler beim Abrufen der Tiere:', error);
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	onMount(fetchAnimals);
+	onMount(fetchAllAnimals);
 
 	// Gefilterte Tiere basierend auf dem aktuellen Filter
-	$: filteredAnimals =
-		filter === 'all' ? animals : animals.filter((animal) => animal.country.includes(filter));
+	$: filteredAnimals = filter
+		? animals.filter(
+				(animal) =>
+					animal.name.toLowerCase().includes(filter.toLowerCase()) ||
+					animal.location.toLowerCase().includes(filter.toLowerCase())
+			)
+		: animals;
 </script>
 
 <h1>Nationaltiere und Wappen</h1>
@@ -40,13 +67,13 @@
 <!-- Filter -->
 <div class="filter">
 	<label for="filter">Filter:</label>
-	<select id="filter" bind:value={filter}>
-		<option value="all">Alle</option>
-		{#each animals as animal (animal.country)}
-			<option value={animal.country}>{animal.country}</option>
-		{/each}
-	</select>
+	<input id="filter" type="text" placeholder="Land oder Tier eingeben..." bind:value={filter} />
 </div>
+
+<!-- Fehleranzeige -->
+{#if errorMessage}
+	<p class="error">{errorMessage}</p>
+{/if}
 
 <!-- Grid -->
 {#if isLoading}
@@ -55,9 +82,10 @@
 	<div class="grid">
 		{#each filteredAnimals as animal}
 			<div class="card">
-				<img src={animal.image} alt="Wappen von {animal.country}" />
-				<h2>{animal.country}</h2>
-				<p>{animal.description}</p>
+				<img src={animal.image} alt="Bild von {animal.name}" />
+				<h2>{animal.name}</h2>
+				<p><strong>Standorte:</strong> {animal.location}</p>
+				<p><strong>Taxonomie:</strong> {animal.taxonomy}</p>
 			</div>
 		{/each}
 	</div>
@@ -69,16 +97,29 @@
 	h1 {
 		color: #2c3e50;
 		margin-bottom: 1rem;
+		text-align: center;
 	}
 
 	.filter {
 		margin-bottom: 1rem;
+		text-align: center;
+	}
+
+	.filter input {
+		padding: 0.5rem;
+		font-size: 1rem;
+		width: calc(100% - 20px);
+		max-width: 400px;
+		margin-top: 10px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
 	}
 
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 		gap: 16px;
+		padding: 16px;
 	}
 
 	.card {
@@ -88,6 +129,7 @@
 		border-radius: 8px;
 		box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 		transition: transform 0.2s ease-in-out;
+		background-color: #fff;
 	}
 
 	.card:hover {
@@ -96,9 +138,17 @@
 
 	img {
 		width: auto;
-		height: 100px;
+		height: auto;
+		max-height: 100px;
 		margin-bottom: 8px;
 		object-fit: cover;
 		border-radius: 4px;
+	}
+
+	.error {
+		color: red;
+		text-align: center;
+		margin-top: 2rem;
+		font-weight: bold;
 	}
 </style>
