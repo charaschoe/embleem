@@ -1,56 +1,89 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { fetchUnsplashImage } from '../lib/unsplash.js';
-	import { animalList } from '../lib/animalList.js';
+    import { onMount } from 'svelte';
+    import { fetchUnsplashImage } from '../lib/unsplash.js';
+    import { animalList } from '../lib/animalList.js';
+    import { writable } from 'svelte/store';
 
-	export let animal: string;
-	export let rows = 3;
-	export let cols = 3;
-	export let imageUrl = '';
-	let hint = '';
-	let revealedTiles = Array(rows * cols).fill(false);
-	let guessedName = '';
-	let isCorrect = false;
-	export let counter = 0; // Zählt die aufgedeckten Kacheln
+    export let highscoreStore; // Highscore store is passed
+    export let animal: string;
+    export let rows = 3;
+    export let cols = 3;
+    export let imageUrl = '';
+    
+    let hint = '';
+    let revealedTiles = Array(rows * cols).fill(false);
+    let guessedName = '';
+    let isCorrect = false;
+    let playerName = ''; // Player name
+    let counter = 0; // Counts the revealed tiles
 
-	// Lädt das Bild und den Hinweis beim Mounten der Komponente
-	onMount(async () => {
-		const result = await fetchUnsplashImage(animal);
-		if (result) {
-			imageUrl = result;
-			const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
-			hint =
-				animalData?.description ||
-				'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
-		} else {
-			imageUrl = '/static/default-animal.jpg';
-			hint = 'Keine Hinweise verfügbar.';
-		}
-	});
+    // Lädt das Bild und den Hinweis beim Mounten der Komponente
+    onMount(async () => {
+        const result = await fetchUnsplashImage(animal);
+        if (result) {
+            imageUrl = result;
+            const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
+            hint =
+                animalData?.description ||
+                'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
+        } else {
+            imageUrl = '/static/default-animal.jpg';
+            hint = 'Keine Hinweise verfügbar.';
+        }
+    });
 
-	// Funktion zum Aufdecken einer Kachel
-	function revealTile(index: number): void {
-		if (!revealedTiles[index]) {
-			revealedTiles[index] = true;
-			counter += 1; // Erhöht den Counter bei jedem Klick
-		}
-	}
+    // Funktion zum Aufdecken einer Kachel
+    function revealTile(index: number): void {
+        if (!revealedTiles[index]) {
+            revealedTiles[index] = true;
+            counter += 1; // Erhöht den Counter bei jedem Klick
+        }
+    }
 
-	// Funktion zur Überprüfung der Benutzereingabe
-	function checkGuess() {
-		const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
-		if (animalData) {
-			isCorrect = animalData.synonyms.some(
-				(synonym) => guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
-			);
-		} else {
-			isCorrect = false;
-		}
-	}
+    // Funktion zur Überprüfung der Benutzereingabe
+    function checkGuess() {
+        const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
+        if (animalData) {
+            isCorrect = animalData.synonyms.some(
+                (synonym) => guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
+            );
+        } else {
+            isCorrect = false;
+        }
+
+        if (isCorrect) {
+            saveHighscore();
+        }
+    }
+
+    // Funktion zum Speichern des Highscores
+    function saveHighscore() {
+        if (playerName.trim() === '') {
+            alert('Bitte gib deinen Namen ein!');
+            return;
+        }
+        highscoreStore.update(scores => [...scores, { name: playerName, moves: counter }]);
+        alert('Highscore gespeichert!');
+        resetGame();
+    }
+
+    // Funktion zum Zurücksetzen des Spiels
+    function resetGame() {
+        revealedTiles = Array(rows * cols).fill(false);
+        counter = 0;
+        guessedName = '';
+        isCorrect = false;
+        playerName = '';
+    }
 </script>
 
 <!-- Puzzle-Container -->
 <div class="puzzle-container">
+	<div class="input-container">
+		<label for="player-name">Dein Name:</label>
+		<input id="player-name" type="text" bind:value={playerName} placeholder="Name eingeben..." />
+	</div>
+
 	<div
 		class="grid"
 		style="--cols: {cols}; background-image: url({imageUrl}); background-size: cover; background-position: center;"
@@ -69,77 +102,104 @@
 	<div class="hint-box">
 		<p><strong>Hinweis:</strong> {hint}</p>
 	</div>
-</div>
 
-<!-- Eingabefeld für die Benutzereingabe -->
-<div class="guess-box">
-	<input
-		type="text"
-		placeholder="Tiernamen eingeben..."
-		bind:value={guessedName}
-		on:keydown={(event) => event.key === 'Enter' && checkGuess()}
-	/>
-	<button on:click={checkGuess}>Überprüfen</button>
-</div>
+	<!-- Eingabefeld für die Benutzereingabe -->
+	<div class="guess-box">
+		<input
+			type="text"
+			placeholder="Tiernamen eingeben..."
+			bind:value={guessedName}
+			on:keydown={(event) => event.key === 'Enter' && checkGuess()}
+		/>
+		<button on:click={checkGuess}>Überprüfen</button>
+	</div>
 
-<!-- Ergebnisanzeige -->
-{#if isCorrect}
+	<!-- Ergebnisanzeige -->
+	{#if isCorrect}
 	<p class="success">Richtig! Das Tier ist ein {animal}. Du hast {counter} Kacheln gebraucht.</p>
-{:else if guessedName}
+	{:else if guessedName}
 	<p class="error">Leider falsch. Versuche es erneut!</p>
-{/if}
+	{/if}
+
+	<button on:click={saveHighscore}>Spiel beenden & Highscore speichern</button>
+</div>
 
 <style>
-	.puzzle-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		width: 300px;
-		margin: 0 auto;
-	}
+    .puzzle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 300px;
+        margin: 0 auto;
+    }
 
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(var(--cols), 1fr);
-		width: 300px;
-		height: 300px;
-		margin: auto;
-		background-size: cover;
-		background-position: center;
-	}
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
 
-	.tile {
-		width: 100%;
-		height: 100%;
-		background-color: gray; /* Startfarbe der Kacheln */
-		cursor: pointer;
-		border: 1px solid #000; /* Optional für sichtbare Trennung */
-	}
+    input {
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        font-size: 1rem;
+        width: 100%;
+    }
 
-	.tile.revealed {
-		background-color: transparent; /* Transparent, um den Container-Hintergrund sichtbar zu machen */
-	}
+    button {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+    }
 
-	.counter-box {
-		margin-top: 15px;
-		font-size: 18px;
-		color: #333;
-	}
+    button:hover {
+        background-color: #0056b3;
+    }
 
-	.hint-box {
-		margin-top: 15px;
-	}
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        width: 300px;
+        height: 300px;
+        margin-top: 10px; /* Korrigierter Wert */
+    }
 
-	.guess-box {
-		margin-top: 20px;
-	}
+    .tile {
+        width: 100%;
+        height: 100%;
+        background-color: gray; /* Startfarbe der Kacheln */
+        cursor: pointer;
+        border-radius: 5px; /* Abgerundete Ecken */
+    }
 
-	.success {
-		color: green;
-	}
+    .tile.revealed {
+        background-color: transparent; /* Transparent, um das Bild darunter sichtbar zu machen */
+        pointer-events: none; /* Deaktiviert weitere Klicks auf aufgedeckte Kacheln */
+    }
 
-	.error {
-		color: red;
-	}
+    .counter-box {
+        margin-top: 15px;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .hint-box {
+        margin-top: 15px;
+    }
+
+    .guess-box {
+        margin-top: 20px;
+    }
+
+    .success {
+        color: green;
+    }
+
+    .error {
+        color: red;
+    }
 </style>
+
+

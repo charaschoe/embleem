@@ -1,57 +1,25 @@
-<script>
-    import PuzzleGrid from '../components/PuzzleGrid.svelte';
-    
-    // Select a random animal for the demo
-    const demoAnimal = "Tiger";
-</script>
-
-<div class="container">
-    <h1>Willkommen zum Wildtier-Puzzle!</h1>
-    <p>Klicke unten, um das Spiel zu starten.</p>
-
-    <div class="demo-puzzle">
-        <PuzzleGrid animal={demoAnimal} />
-    </div>
-
-    <a href="/game">
-        <button>Spiel starten</button>
-    </a>
-</div>
+<h1>Willkommen beim Tier-Aufdeckspiel!</h1>
+<p>Teste dein Wissen über Tiere und entdecke sie Stück für Stück.</p>
+<a href="/game" class="button">Spiel starten</a>
 
 <style>
-    .container {
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    h1 {
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    p {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .demo-puzzle {
-        max-width: 300px;
-        margin: 20px auto;
-    }
-
-    button {
-        display: block;
-        margin: 0 auto;
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #0077cc;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #005fa3;
-    }
+	h1 {
+		color: #2c3e50;
+	}
+	p {
+		font-size: 1.2rem;
+		margin-bottom: 1rem;
+	}
+	.button {
+		display: inline-block;
+		padding: 0.5rem 1rem;
+		background-color: #0070f3;
+		color: white;
+		text-decoration: none;
+		border-radius: 5px;
+		font-weight: bold;
+	}
+	.button:hover {
+		background-color: #0056b3;
+	}
 </style>
