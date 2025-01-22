@@ -1,16 +1,13 @@
-<script>
-	// Keine zusätzlichen Logiken nötig
-</script>
-
 <nav>
 	<a href="/">Startseite</a>
 	<a href="/game">Spiel starten</a>
-	<a href="/highscores">Highscores</a>
+	<a href="/highscores">Leaderboard</a>
+	<!-- Neuer Link -->
+	<a href="/animals">Nationaltiere & Wappen</a>
+	<!-- Neuer Link -->
 </nav>
 
 <slot />
-
-<!-- Platzhalter für den Seiteninhalt -->
 
 <style>
 	nav {

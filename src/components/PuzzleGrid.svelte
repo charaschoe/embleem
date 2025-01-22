@@ -2,9 +2,8 @@
 	import { onMount } from 'svelte';
 	import { fetchUnsplashImage } from '../lib/unsplash.js';
 	import { animalList } from '../lib/animalList.js';
-	import { writable } from 'svelte/store';
 
-	export let highscoreStore; // Highscore store is passed
+	export let highscoreStore;
 	export let animal: string;
 	export let rows = 3;
 	export let cols = 3;
@@ -14,33 +13,39 @@
 	let revealedTiles = Array(rows * cols).fill(false);
 	let guessedName = '';
 	let isCorrect = false;
-	let playerName = ''; // Player name
-	let counter = 0; // Counts the revealed tiles
+	let playerName = '';
+	let counter = 0;
+	let countryInfo = null; // Speichert das Land und das Wappen
 
 	// Lädt das Bild und den Hinweis beim Mounten der Komponente
 	onMount(async () => {
 		const result = await fetchUnsplashImage(animal);
 		if (result) {
 			imageUrl = result;
+
 			const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
 			hint =
 				animalData?.description ||
 				'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
+
+			// Land und Wappen abrufen
+			countryInfo = {
+				country: animalData?.country || 'Unbekannt',
+				coatOfArms: animalData?.coatOfArms || '/static/default-coat-of-arms.png'
+			};
 		} else {
 			imageUrl = '/static/default-animal.jpg';
 			hint = 'Keine Hinweise verfügbar.';
 		}
 	});
 
-	// Funktion zum Aufdecken einer Kachel
 	function revealTile(index: number): void {
 		if (!revealedTiles[index]) {
 			revealedTiles[index] = true;
-			counter += 1; // Erhöht den Counter bei jedem Klick
+			counter += 1;
 		}
 	}
 
-	// Funktion zur Überprüfung der Benutzereingabe
 	function checkGuess() {
 		const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
 		if (animalData) {
@@ -53,37 +58,41 @@
 
 		if (isCorrect) {
 			saveHighscore();
+			alert(`Richtig! Das Tier ist ein ${animal}.`);
+		} else {
+			alert('Leider falsch. Versuche es erneut!');
 		}
 	}
 
-	// Funktion zum Speichern des Highscores
 	function saveHighscore() {
 		if (playerName.trim() === '') {
 			alert('Bitte gib deinen Namen ein!');
 			return;
 		}
+
 		highscoreStore.update((scores) => [...scores, { name: playerName, moves: counter }]);
+
 		alert('Highscore gespeichert!');
 		resetGame();
 	}
 
-	// Funktion zum Zurücksetzen des Spiels
 	function resetGame() {
 		revealedTiles = Array(rows * cols).fill(false);
 		counter = 0;
-		guessedName = '';
-		isCorrect = false;
 		playerName = '';
+		isCorrect = false;
+		countryInfo = null;
 	}
 </script>
 
-<!-- Puzzle-Container -->
 <div class="puzzle-container">
+	<!-- Spielername -->
 	<div class="input-container">
 		<label for="player-name">Dein Name:</label>
 		<input id="player-name" type="text" bind:value={playerName} placeholder="Name eingeben..." />
 	</div>
 
+	<!-- Puzzle -->
 	<div
 		class="grid"
 		style="--cols: {cols}; background-image: url({imageUrl}); background-size: cover; background-position: center;"
@@ -93,17 +102,15 @@
 		{/each}
 	</div>
 
-	<!-- Anzeige des Counters -->
-	<div class="counter-box">
-		<p><strong>Aufgedeckte Kacheln:</strong> {counter}</p>
-	</div>
+	<!-- Ergebnisanzeige -->
+	{#if isCorrect && countryInfo}
+		<div class="country-info">
+			<p>Das Tier gehört zu {countryInfo.country}.</p>
+			<img src={countryInfo.coatOfArms} alt="Wappen von {countryInfo.country}" width="100" />
+		</div>
+	{/if}
 
-	<!-- Hinweisbox -->
-	<div class="hint-box">
-		<p><strong>Hinweis:</strong> {hint}</p>
-	</div>
-
-	<!-- Eingabefeld für die Benutzereingabe -->
+	<!-- Eingabefeld -->
 	<div class="guess-box">
 		<input
 			type="text"
@@ -113,15 +120,6 @@
 		/>
 		<button on:click={checkGuess}>Überprüfen</button>
 	</div>
-
-	<!-- Ergebnisanzeige -->
-	{#if isCorrect}
-		<p class="success">Richtig! Das Tier ist ein {animal}. Du hast {counter} Kacheln gebraucht.</p>
-	{:else if guessedName}
-		<p class="error">Leider falsch. Versuche es erneut!</p>
-	{/if}
-
-	<button on:click={saveHighscore}>Spiel beenden & Highscore speichern</button>
 </div>
 
 <style>
