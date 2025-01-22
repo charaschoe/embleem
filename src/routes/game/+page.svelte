@@ -2,12 +2,8 @@
   import PuzzleGrid from '../../components/PuzzleGrid.svelte';
   import { fetchUnsplashImage } from '../../lib/unsplash.js';
 
-  const wildAnimals = [
-    "Tiger", "Löwe", "Elefant", "Leopard", "Gepard", "Nashorn",
-    "Bär", "Wolf", "Fuchs", "Krokodil", "Giraffe",
-    "Zebra", "Panda", "Schimpanse", "Gorilla",
-    "Orang-Utan", "Adler", "Falke", "Hai", "Delfin"
-  ];
+  import { animalList } from '../../lib/animalList.js';
+  const wildAnimals = animalList.map(animal => animal.name);
 
   let randomAnimal = wildAnimals[Math.floor(Math.random() * wildAnimals.length)];
 </script>
