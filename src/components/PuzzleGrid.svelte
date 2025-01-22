@@ -11,7 +11,7 @@
 	let revealedTiles = Array(rows * cols).fill(false);
 	let guessedName = '';
 	let isCorrect = false;
-	export let counter = 0;
+	export let counter = 0; // Zählt die aufgedeckten Kacheln
 
 	// Lädt das Bild und den Hinweis beim Mounten der Komponente
 	onMount(async () => {
@@ -32,7 +32,7 @@
 	function revealTile(index: number): void {
 		if (!revealedTiles[index]) {
 			revealedTiles[index] = true;
-			counter += 1;
+			counter += 1; // Erhöht den Counter bei jedem Klick
 		}
 	}
 
@@ -56,11 +56,13 @@
 		style="--cols: {cols}; background-image: url({imageUrl}); background-size: cover; background-position: center;"
 	>
 		{#each revealedTiles as revealed, index}
-			<div
-				class="tile {revealed ? 'revealed' : ''}"
-				on:click={() => revealTile(index)}
-			></div>
+			<div class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)}></div>
 		{/each}
+	</div>
+
+	<!-- Anzeige des Counters -->
+	<div class="counter-box">
+		<p><strong>Aufgedeckte Kacheln:</strong> {counter}</p>
 	</div>
 
 	<!-- Hinweisbox -->
@@ -71,62 +73,73 @@
 
 <!-- Eingabefeld für die Benutzereingabe -->
 <div class="guess-box">
-	<input type="text" placeholder="Tiernamen eingeben..." bind:value={guessedName} />
+	<input
+		type="text"
+		placeholder="Tiernamen eingeben..."
+		bind:value={guessedName}
+		on:keydown={(event) => event.key === 'Enter' && checkGuess()}
+	/>
 	<button on:click={checkGuess}>Überprüfen</button>
 </div>
 
 <!-- Ergebnisanzeige -->
 {#if isCorrect}
-	<p class="success">Richtig! Das Tier ist ein {animal}.</p>
+	<p class="success">Richtig! Das Tier ist ein {animal}. Du hast {counter} Kacheln gebraucht.</p>
 {:else if guessedName}
 	<p class="error">Leider falsch. Versuche es erneut!</p>
 {/if}
 
 <style>
-	puzzle-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 300px;
-        margin: 0 auto;
-    }
+	.puzzle-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 300px;
+		margin: 0 auto;
+	}
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(var(--cols), 1fr);
-        width: 300px;
-        height: 300px;
-        margin: auto;
-        background-size: cover;
-        background-position: center;
-    }
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(var(--cols), 1fr);
+		width: 300px;
+		height: 300px;
+		margin: auto;
+		background-size: cover;
+		background-position: center;
+	}
 
-    .tile {
-        width: 100%;
-        height: 100%;
-        background-color: gray; /* Startfarbe der Kacheln */
-        cursor: pointer;
-        border: 1px solid #000; /* Optional für sichtbare Trennung */
-    }
+	.tile {
+		width: 100%;
+		height: 100%;
+		background-color: gray; /* Startfarbe der Kacheln */
+		cursor: pointer;
+		border: 1px solid #000; /* Optional für sichtbare Trennung */
+	}
 
-    .tile.revealed {
-        background-color: transparent; /* Transparent, um den Container-Hintergrund sichtbar zu machen */
-    }
+	.tile.revealed {
+		background-color: transparent; /* Transparent, um den Container-Hintergrund sichtbar zu machen */
+	}
 
-    .hint-box {
-        margin-top: 15px;
-    }
+	.counter-box {
+		margin-top: 15px;
+		font-size: 18px;
+		color: #333;
+	}
 
-    .guess-box {
-        margin-top: 20px;
-    }
+	.hint-box {
+		margin-top: 15px;
+	}
 
-    .success {
-        color: green;
-    }
+	.guess-box {
+		margin-top: 20px;
+	}
 
-    .error {
-        color: red;
-    }
+	.success {
+		color: green;
+	}
+
+	.error {
+		color: red;
+	}
 </style>
