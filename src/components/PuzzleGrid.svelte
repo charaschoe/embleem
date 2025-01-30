@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import confetti from 'canvas-confetti'; // Confetti-Bibliothek
+	import confetti from 'canvas-confetti';
 
 	export let highscoreStore;
 	export let animal: string;
 	export let rows = 3;
 	export let cols = 3;
 	export let imageUrl = '';
+	export let country = ''; // Neues Feld für das Land
 
 	let hint = '';
 	let revealedTiles = Array(rows * cols).fill(false);
@@ -15,25 +16,24 @@
 	let isCorrect = false;
 	let counter = 0;
 
-	// Lädt das Bild und den Hinweis beim Mounten der Komponente
 	onMount(async () => {
-		hint = 'Dieses Tier kannst du erraten!';
+		hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
 		imageUrl = '/static/default-animal.jpg';
 	});
 
 	function revealTile(index: number): void {
 		if (!revealedTiles[index]) {
 			revealedTiles[index] = true;
-			counter += 1; // Erhöhe den Zähler bei jedem Klick
+			counter += 1;
 		}
 	}
 
 	function checkGuess() {
 		if (guessedName.toLowerCase().trim() === animal.toLowerCase()) {
 			isCorrect = true;
-			triggerConfetti(); // Confetti auslösen
+			triggerConfetti();
 		} else {
-			alert('Leider falsch. Versuche es erneut!');
+			alert('Leider falsch. Versuche es nochmal!');
 		}
 	}
 
@@ -88,7 +88,7 @@
 
 	<!-- Ergebnisanzeige -->
 	{#if isCorrect}
-		<p class="success">Super gemacht! Das Tier ist ein {animal}.</p>
+		<p class="success">Super gemacht! Das Tier ist ein {animal}, das Nationaltier von {country}.</p>
 	{/if}
 </div>
 
@@ -103,42 +103,41 @@
 	}
 
 	h1 {
-		font-size: 3rem; /* Größerer Titel für Kinder */
-		color: #333;
-		margin-bottom: 30px;
+		font-size: 2.5rem;
+		color: #2c3e50;
+		margin-bottom: 20px;
 	}
 
-	/* Eingabefelder */
 	.input-container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 20px; /* Abstand zwischen den Feldern */
-		margin-bottom: 30px;
+		gap: 15px;
+		margin-bottom: 20px;
 	}
 
 	.input-container label {
-		font-size: 1.5rem; /* Größere Schriftgröße */
+		font-size: 1.2rem;
 		font-weight: bold;
 		color: #555;
 	}
 
 	.input-container input {
-		width: 350px; /* Breitere Eingabefelder */
-		padding: 15px; /* Größere Polsterung */
-		font-size: 1.5rem; /* Größere Schriftgröße */
-		border-radius: 10px; /* Abgerundete Ecken */
-		border: 2px solid #ccc; /* Dickere Umrandung */
+		width: 300px;
+		padding: 10px;
+		font-size: 1.2rem;
+		border-radius: 5px;
+		border: 1px solid #ccc;
 		text-align: center;
 	}
 
 	.input-container button {
-		padding: 15px 30px; /* Größerer Button */
-		font-size: 1.5rem; /* Größere Schriftgröße */
+		padding: 10px 20px;
+		font-size: 1.2rem;
 		cursor: pointer;
 		background-color: #007bff;
 		color: white;
-		border-radius: 10px; /* Abgerundete Ecken */
+		border-radius: 5 px;
 		border: none;
 	}
 
@@ -146,31 +145,21 @@
 		background-color: #0056b3;
 	}
 
-	/* Dynamische Anzeige der Versuche */
 	.counter-box p {
-		font-size: 1rem; /* Korrigierte Syntax */
+		font-size: 1 rem;
 		color: #333;
-		margin-top: 10px; /* Korrigierte Syntax */
+		margin-top: 10 px;
 		text-align: center;
 	}
 
-	/* Puzzle-Grid */
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(var(--cols), 1fr); /* Korrigierte Syntax */
-		width: 300px; /* Korrigierte Syntax */
-		height: 300px; /* Korrigierte Syntax */
-		gap: 5px;
-		margin-top: 20px;
+		grid-template-columns: repeat(var(--cols), 1 fr);
+		width: 300 px;
+		height: 300 px;
+		gap: 5 px;
+		margin-top: 20 px;
 		text-align: center;
-	}
-
-	.tile {
-		width: auto;
-		height: auto;
-		background-color: #ccc;
-		cursor: pointer;
-		border-radius: 4px;
 	}
 
 	.tile.revealed {
@@ -178,12 +167,11 @@
 		pointer-events: none;
 	}
 
-	/* Erfolgsanzeige */
 	.success {
 		color: #28a745;
-		font-size: 1.6rem;
+		font-size: 1 rem;
 		font-weight: bold;
-		margin-top: 20px;
+		margin-top: 15 px;
 		text-align: center;
 	}
 </style>

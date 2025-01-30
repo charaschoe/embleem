@@ -8,7 +8,7 @@
 	});
 </script>
 
-<h1>Leaderboard</h1>
+<h1>Bestenliste</h1>
 <p>Hier sind die besten Spieler und ihre Ergebnisse:</p>
 
 {#if highscores.length > 0}
@@ -31,25 +31,30 @@
 		</tbody>
 	</table>
 {:else}
-	<p>Noch keine Highscores gespeichert.</p>
+	<p>Noch keine Ergebnisse gespeichert.</p>
 {/if}
 
 <style>
 	h1 {
 		color: #2c3e50;
 		margin-bottom: 1rem;
+		text-align: center;
+	}
+
+	p {
+		text-align: center;
 	}
 
 	table {
 		width: 100%;
 		border-collapse: collapse;
 		margin-top: 1rem;
+		text-align: center;
 	}
 
 	th,
 	td {
 		padding: 0.5rem;
-		text-align: left;
 		border: 1px solid #ddd;
 	}
 
