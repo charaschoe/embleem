@@ -53,22 +53,22 @@
 
 	<!-- Eingabefelder -->
 	<div class="input-container">
-		<label for="player-name">Dein Name:</label>
-		<input id="player-name" type="text" bind:value={playerName} placeholder="Name eingeben..." />
+		<label for="player-name">Wie heißt du?</label>
+		<input
+			id="player-name"
+			type="text"
+			bind:value={playerName}
+			placeholder="Deinen Namen hier eingeben..."
+		/>
 
-		<label for="guessed-name">Tiername:</label>
+		<label for="guessed-name">Welches Tier siehst du?</label>
 		<input
 			id="guessed-name"
 			type="text"
 			bind:value={guessedName}
-			placeholder="Tiernamen eingeben..."
+			placeholder="Tiernamen hier eingeben..."
 		/>
-		<button on:click={checkGuess}>Überprüfen</button>
-	</div>
-
-	<!-- Testanzeige -->
-	<div class="test-animal-name">
-		<p><strong>Tiername (für Tests):</strong> {animal}</p>
+		<button on:click={checkGuess}>Antwort prüfen</button>
 	</div>
 
 	<!-- Dynamische Anzeige der Versuche -->
@@ -88,7 +88,7 @@
 
 	<!-- Ergebnisanzeige -->
 	{#if isCorrect}
-		<p class="success">Richtig! Das Tier ist ein {animal}.</p>
+		<p class="success">Super gemacht! Das Tier ist ein {animal}.</p>
 	{/if}
 </div>
 
@@ -97,47 +97,48 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 80%;
+		width: 90%;
 		margin: 0 auto;
 		text-align: center;
 	}
 
 	h1 {
-		font-size: 2.5rem;
+		font-size: 3rem; /* Größerer Titel für Kinder */
 		color: #333;
-		margin-bottom: 20px;
+		margin-bottom: 30px;
 	}
 
+	/* Eingabefelder */
 	.input-container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 15px;
-		margin-bottom: 20px;
+		gap: 20px; /* Abstand zwischen den Feldern */
+		margin-bottom: 30px;
 	}
 
 	.input-container label {
-		font-size: 1.2rem;
+		font-size: 1.5rem; /* Größere Schriftgröße */
 		font-weight: bold;
 		color: #555;
 	}
 
 	.input-container input {
-		width: 300px;
-		padding: 10px;
-		font-size: 1.2rem;
-		border-radius: 5px;
-		border: 1px solid #ccc;
+		width: 350px; /* Breitere Eingabefelder */
+		padding: 15px; /* Größere Polsterung */
+		font-size: 1.5rem; /* Größere Schriftgröße */
+		border-radius: 10px; /* Abgerundete Ecken */
+		border: 2px solid #ccc; /* Dickere Umrandung */
 		text-align: center;
 	}
 
 	.input-container button {
-		padding: 10px 20px;
-		font-size: 1.2rem;
+		padding: 15px 30px; /* Größerer Button */
+		font-size: 1.5rem; /* Größere Schriftgröße */
 		cursor: pointer;
 		background-color: #007bff;
 		color: white;
-		border-radius: 5px;
+		border-radius: 10px; /* Abgerundete Ecken */
 		border: none;
 	}
 
@@ -145,25 +146,29 @@
 		background-color: #0056b3;
 	}
 
+	/* Dynamische Anzeige der Versuche */
 	.counter-box p {
-		font-size: 1.2rem;
-		color: #333333;
-		margin-top: 10px;
+		font-size: 1rem; /* Korrigierte Syntax */
+		color: #333;
+		margin-top: 10px; /* Korrigierte Syntax */
+		text-align: center;
 	}
 
+	/* Puzzle-Grid */
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(var(--cols), 1fr);
-		width: 300px;
-		height: 300px;
+		grid-template-columns: repeat(var(--cols), 1fr); /* Korrigierte Syntax */
+		width: 300px; /* Korrigierte Syntax */
+		height: 300px; /* Korrigierte Syntax */
 		gap: 5px;
 		margin-top: 20px;
+		text-align: center;
 	}
 
 	.tile {
-		width: 100%;
-		height: 100%;
-		background-color: gray;
+		width: auto;
+		height: auto;
+		background-color: #ccc;
 		cursor: pointer;
 		border-radius: 4px;
 	}
@@ -173,11 +178,12 @@
 		pointer-events: none;
 	}
 
+	/* Erfolgsanzeige */
 	.success {
 		color: #28a745;
-		font-size: 1 0.4 rem;
+		font-size: 1.6rem;
 		font-weight: bold;
-		margin-top: 15 px;
+		margin-top: 20px;
 		text-align: center;
 	}
 </style>

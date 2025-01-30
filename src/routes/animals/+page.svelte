@@ -1,154 +1,165 @@
 <script>
 	import { onMount } from 'svelte';
 
-	let animals = [];
-	let filter = ''; // Filtertext
-	let isLoading = true;
-	let errorMessage = '';
+	let coatsOfArms = []; // Liste der Wappen
+	let isLoading = true; // Ladeanzeige
+	let errorMessage = ''; // Fehlermeldung
+	let continueToken = null; // Token für Pagination (Wikipedia API)
 
-	// Funktion, um alle Tiere zu laden (mit Pagination)
-	async function fetchAllAnimals() {
-		const limit = 10; // Maximale Anzahl von Ergebnissen pro Anfrage
-		let offset = 0;
-		let hasMore = true;
+	const limit = 10; // Maximale Anzahl von Ergebnissen pro Anfrage
+
+	// Funktion, um Wappen aus der Wikipedia API zu laden
+	async function fetchCoatsOfArms() {
+		isLoading = true;
 
 		try {
-			while (hasMore) {
-				const response = await fetch(`https://api.api-ninjas.com/v1/animals?offset=${offset}`, {
-					headers: { 'X-Api-Key': 'J9h/6yC9ckxAbUK0p/9LFw==mgxejoWHqJOtyLcU' }
-				});
-
-				if (!response.ok) {
-					errorMessage = `Fehler beim Abrufen der Tiere: ${response.statusText}`;
-					console.error(errorMessage);
-					break;
-				}
-
-				const data = await response.json();
-
-				if (data.length === 0) {
-					hasMore = false; // Keine weiteren Ergebnisse
-				} else {
-					animals = [
-						...animals,
-						...data.map((animal) => ({
-							name: animal.name,
-							taxonomy: animal.taxonomy || 'Keine Taxonomie verfügbar',
-							image: animal.image_link || '/static/default-coat-of-arms.png',
-							location: animal.locations?.join(', ') || 'Unbekannt'
-						}))
-					];
-					offset += limit; // Nächste Seite laden
-				}
+			const url = new URL('https://en.wikipedia.org/w/api.php');
+			url.searchParams.append('action', 'query');
+			url.searchParams.append('format', 'json');
+			url.searchParams.append('origin', '*'); // Für CORS
+			url.searchParams.append('generator', 'categorymembers');
+			url.searchParams.append('gcmtitle', 'Category:National_coats_of_arms'); // Kategorie für Nationalwappen
+			url.searchParams.append('gcmtype', 'file');
+			url.searchParams.append('gcmlimit', limit);
+			if (continueToken) {
+				url.searchParams.append('gcmcontinue', continueToken);
 			}
+			url.searchParams.append('prop', 'pageimages');
+			url.searchParams.append('piprop', 'thumbnail');
+			url.searchParams.append('pithumbsize', 200);
+
+			const response = await fetch(url);
+
+			if (!response.ok) {
+				errorMessage = `Fehler beim Abrufen der Wappen: ${response.statusText}`;
+				console.error(errorMessage);
+				return;
+			}
+
+			const data = await response.json();
+			const pages = data.query?.pages || {};
+
+			// Extrahiere relevante Daten aus der API-Antwort
+			const newCoatsOfArms = Object.values(pages).map((page) => ({
+				title: page.title,
+				image: page.thumbnail?.source || '/static/default-coat-of-arms.png'
+			}));
+
+			coatsOfArms = [...coatsOfArms, ...newCoatsOfArms];
+			continueToken = data.continue?.gcmcontinue || null; // Aktualisiere das Token für die nächste Anfrage
 		} catch (error) {
-			errorMessage = 'Ein Fehler ist aufgetreten. Bitte überprüfe deine API-Konfiguration.';
-			console.error('Fehler beim Abrufen der Tiere:', error);
+			errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+			console.error('Fehler beim Abrufen der Wappen:', error);
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	onMount(fetchAllAnimals);
-
-	// Gefilterte Tiere basierend auf dem aktuellen Filter
-	$: filteredAnimals = filter
-		? animals.filter(
-				(animal) =>
-					animal.name.toLowerCase().includes(filter.toLowerCase()) ||
-					animal.location.toLowerCase().includes(filter.toLowerCase())
-			)
-		: animals;
+	onMount(fetchCoatsOfArms);
 </script>
 
-<h1>Nationaltiere und Wappen</h1>
-<p>Hier findest du eine Liste der Nationaltiere und ihre zugehörigen Länder sowie Wappen.</p>
-
-<!-- Filter -->
-<div class="filter">
-	<label for="filter">Filter:</label>
-	<input id="filter" type="text" placeholder="Land oder Tier eingeben..." bind:value={filter} />
-</div>
+<h1>Entdecke die Wappen der Welt!</h1>
+<p>
+	Hier kannst du die Wappen verschiedener Länder sehen. Klicke unten auf "Mehr laden", um weitere
+	Wappen anzuzeigen!
+</p>
 
 <!-- Fehleranzeige -->
 {#if errorMessage}
 	<p class="error">{errorMessage}</p>
 {/if}
 
-<!-- Grid -->
-{#if isLoading}
-	<p>Daten werden geladen...</p>
-{:else if filteredAnimals.length > 0}
-	<div class="grid">
-		{#each filteredAnimals as animal}
-			<div class="card">
-				<img src={animal.image} alt="Bild von {animal.name}" />
-				<h2>{animal.name}</h2>
-				<p><strong>Standorte:</strong> {animal.location}</p>
-				<p><strong>Taxonomie:</strong> {animal.taxonomy}</p>
-			</div>
-		{/each}
-	</div>
-{:else}
-	<p>Keine Daten verfügbar.</p>
+<!-- Grid mit den Wappen -->
+<div class="grid">
+	{#each coatsOfArms as coat}
+		<div class="card">
+			<img src={coat.image} alt="Wappen von {coat.title}" />
+			<h2>{coat.title}</h2>
+		</div>
+	{/each}
+</div>
+
+<!-- Mehr laden Button -->
+{#if !isLoading && continueToken}
+	<button class="load-more" on:click={fetchCoatsOfArms}>Mehr laden</button>
+{:else if isLoading}
+	<p class="loading">Wappen werden geladen...</p>
 {/if}
 
 <style>
 	h1 {
-		color: #2c3e50;
-		margin-bottom: 1rem;
 		text-align: center;
+		font-size: 2.5rem;
+		color: #333;
+		margin-bottom: 20px;
 	}
 
-	.filter {
-		margin-bottom: 1rem;
+	p {
 		text-align: center;
-	}
-
-	.filter input {
-		padding: 0.5rem;
-		font-size: 1rem;
-		width: calc(100% - 20px);
-		max-width: 400px;
-		margin-top: 10px;
-		border: 1px solid #ccc;
-		border-radius: 4px;
+		font-size: 1.2rem;
+		color: #555;
+		margin-bottom: 20px;
 	}
 
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-		gap: 16px;
-		padding: 16px;
+		gap: 20px;
+		padding: 20px;
+		justify-items: center; /* Zentriert die Karten */
 	}
 
 	.card {
-		border: 1px solid #ccc;
-		padding: 16px;
 		text-align: center;
-		border-radius: 8px;
+		background-color: #f9f9f9;
+		border-radius: 10px;
+		padding: 15px;
 		box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-		transition: transform 0.2s ease-in-out;
-		background-color: #fff;
-	}
-
-	.card:hover {
-		transform: scale(1.05);
+		width: 200px; /* Einheitliche Kartengröße */
 	}
 
 	img {
 		width: auto;
 		height: auto;
-		max-height: 100px;
-		margin-bottom: 8px;
-		object-fit: cover;
-		border-radius: 4px;
+		max-height: 150px;
+		margin-bottom: 10px;
+		object-fit: contain;
+		border-radius: 5px;
+	}
+
+	h2 {
+		font-size: 1.2rem;
+		color: #333;
+		margin-top: 10px;
+	}
+
+	.load-more {
+		display: block;
+		margin: 20px auto;
+		padding: 10px 20px;
+		font-size: 1.2rem;
+		background-color: #007bff;
+		color: white;
+		border-radius: 5 px;
+		border: none;
+		cursor: pointer;
+	}
+
+	.load-more:hover {
+		background-color: #0056b3;
+	}
+
+	.loading {
+		text-align: center;
+		font-size: 1rem; /* Korrigierte Syntax */
+		color: #555;
 	}
 
 	.error {
 		color: red;
 		text-align: center;
-		margin-top: 2rem;
 		font-weight: bold;
+		font-size: 1rem; /* Korrigierte Syntax */
+		margin-top: 15px; /* Korrigierte Syntax */
 	}
 </style>
