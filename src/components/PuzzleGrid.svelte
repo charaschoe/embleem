@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fetchUnsplashImage } from '../lib/unsplash.js';
-	import { animalList } from '../lib/animalList.js';
+	import confetti from 'canvas-confetti'; // Confetti-Bibliothek
 
 	export let highscoreStore;
 	export let animal: string;
@@ -12,30 +11,14 @@
 	let hint = '';
 	let revealedTiles = Array(rows * cols).fill(false);
 	let guessedName = '';
-	let isCorrect = false;
 	let playerName = '';
-	let counter = 0; // Anzahl der Versuche/Klicks
-	let countryInfo = null;
+	let isCorrect = false;
+	let counter = 0;
 
 	// Lädt das Bild und den Hinweis beim Mounten der Komponente
 	onMount(async () => {
-		const result = await fetchUnsplashImage(animal);
-		if (result) {
-			imageUrl = result;
-
-			const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
-			hint =
-				animalData?.description ||
-				'Dieses Tier kann man in der Natur finden. Schau dir seine Merkmale genau an!';
-
-			countryInfo = {
-				country: animalData?.country || 'Unbekannt',
-				coatOfArms: animalData?.coatOfArms || '/static/default-coat-of-arms.png'
-			};
-		} else {
-			imageUrl = '/static/default-animal.jpg';
-			hint = 'Keine Hinweise verfügbar.';
-		}
+		hint = 'Dieses Tier kannst du erraten!';
+		imageUrl = '/static/default-animal.jpg';
 	});
 
 	function revealTile(index: number): void {
@@ -46,66 +29,44 @@
 	}
 
 	function checkGuess() {
-		if (playerName.trim() === '') {
-			alert('Bitte gib deinen Namen ein!');
-			return;
-		}
-
-		const animalData = animalList.find((a) => a.name.toLowerCase() === animal.toLowerCase());
-		if (animalData) {
-			isCorrect = animalData.synonyms.some(
-				(synonym) => guessedName.toLowerCase().trim() === synonym.toLowerCase().trim()
-			);
-		} else {
-			isCorrect = false;
-		}
-
-		if (isCorrect) {
-			saveHighscore();
-			alert(`Richtig! Das Tier ist ein ${animal}.`);
+		if (guessedName.toLowerCase().trim() === animal.toLowerCase()) {
+			isCorrect = true;
+			triggerConfetti(); // Confetti auslösen
 		} else {
 			alert('Leider falsch. Versuche es erneut!');
 		}
 	}
 
-	function saveHighscore() {
-		if (playerName.trim() === '') {
-			alert('Bitte gib deinen Namen ein!');
-			return;
-		}
-
-		highscoreStore.update((scores) => [...scores, { name: playerName, moves: counter }]);
-
-		alert('Highscore gespeichert!');
-		resetGame();
-	}
-
-	function resetGame() {
-		revealedTiles = Array(rows * cols).fill(false);
-		counter = 0;
-		playerName = '';
-		isCorrect = false;
-		countryInfo = null;
+	function triggerConfetti() {
+		confetti({
+			spread: 100,
+			startVelocity: 30,
+			particleCount: 150,
+			zIndex: 9999,
+			origin: { x: 0.5, y: 0.5 }
+		});
 	}
 </script>
 
 <div class="puzzle-container">
-	<!-- Spielername -->
+	<h1>Tier-Ratespiel</h1>
+
+	<!-- Eingabefelder -->
 	<div class="input-container">
 		<label for="player-name">Dein Name:</label>
+		<input id="player-name" type="text" bind:value={playerName} placeholder="Name eingeben..." />
+
+		<label for="guessed-name">Tiername:</label>
 		<input
-			id="player-name"
+			id="guessed-name"
 			type="text"
-			bind:value={playerName}
-			placeholder="Name eingeben..."
-			required
+			bind:value={guessedName}
+			placeholder="Tiernamen eingeben..."
 		/>
-		{#if playerName.trim() === ''}
-			<p class="error">Bitte gib deinen Namen ein!</p>
-		{/if}
+		<button on:click={checkGuess}>Überprüfen</button>
 	</div>
 
-	<!-- Tiername für Testzwecke -->
+	<!-- Testanzeige -->
 	<div class="test-animal-name">
 		<p><strong>Tiername (für Tests):</strong> {animal}</p>
 	</div>
@@ -126,23 +87,9 @@
 	</div>
 
 	<!-- Ergebnisanzeige -->
-	{#if isCorrect && countryInfo}
-		<div class="country-info">
-			<p>Das Tier gehört zu {countryInfo.country}.</p>
-			<img src={countryInfo.coatOfArms} alt="Wappen von {countryInfo.country}" width="100" />
-		</div>
+	{#if isCorrect}
+		<p class="success">Richtig! Das Tier ist ein {animal}.</p>
 	{/if}
-
-	<!-- Eingabefeld -->
-	<div class="guess-box">
-		<input
-			type="text"
-			placeholder="Tiernamen eingeben..."
-			bind:value={guessedName}
-			on:keydown={(event) => event.key === 'Enter' && checkGuess()}
-		/>
-		<button on:click={checkGuess}>Überprüfen</button>
-	</div>
 </div>
 
 <style>
@@ -150,33 +97,58 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 300px;
+		width: 80%;
 		margin: 0 auto;
-	}
-
-	label {
-		font-weight: bold;
-		display: block;
-		margin-bottom: 0.5rem;
 		text-align: center;
 	}
 
-	input {
-		margin-bottom: 1rem;
-		padding: 0.5rem;
-		font-size: 1rem;
-		width: 100%;
+	h1 {
+		font-size: 2.5rem;
+		color: #333;
+		margin-bottom: 20px;
 	}
 
-	button {
-		margin-top: 1rem;
-		padding: 0.5rem 1rem;
-		font-size: 1rem;
+	.input-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 15px;
+		margin-bottom: 20px;
+	}
+
+	.input-container label {
+		font-size: 1.2rem;
+		font-weight: bold;
+		color: #555;
+	}
+
+	.input-container input {
+		width: 300px;
+		padding: 10px;
+		font-size: 1.2rem;
+		border-radius: 5px;
+		border: 1px solid #ccc;
+		text-align: center;
+	}
+
+	.input-container button {
+		padding: 10px 20px;
+		font-size: 1.2rem;
 		cursor: pointer;
+		background-color: #007bff;
+		color: white;
+		border-radius: 5px;
+		border: none;
 	}
 
-	button:hover {
+	.input-container button:hover {
 		background-color: #0056b3;
+	}
+
+	.counter-box p {
+		font-size: 1.2rem;
+		color: #333333;
+		margin-top: 10px;
 	}
 
 	.grid {
@@ -184,30 +156,28 @@
 		grid-template-columns: repeat(var(--cols), 1fr);
 		width: 300px;
 		height: 300px;
+		gap: 5px;
+		margin-top: 20px;
 	}
 
 	.tile {
 		width: 100%;
 		height: 100%;
-		background-color: gray; /* Startfarbe der Kacheln */
+		background-color: gray;
 		cursor: pointer;
-		transition: background-color 0.3s ease-in-out; /* Animation für die Hintergrundfarbe */
+		border-radius: 4px;
 	}
 
 	.tile.revealed {
-		background-color: transparent; /* Transparent, um das Bild darunter sichtbar zu machen */
-		pointer-events: none; /* Deaktiviert weitere Klicks auf aufgedeckte Kacheln */
+		background-color: transparent;
+		pointer-events: none;
 	}
 
-	.error {
-		color: red;
-		font-size: 0.9rem;
-		margin-top: 0.5rem;
-	}
-
-	.counter-box p {
-		font-size: 1rem;
-		color: #333333; /* Optional für bessere Sichtbarkeit */
-		margin-top: 10px;
+	.success {
+		color: #28a745;
+		font-size: 1 0.4 rem;
+		font-weight: bold;
+		margin-top: 15 px;
+		text-align: center;
 	}
 </style>

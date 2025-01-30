@@ -4,11 +4,13 @@
 	// Props für die Tierliste und den korrekten Tiernamen
 	export let animalList = [];
 	export let correctAnimal = '';
+	export let highscoreStore;
 
 	let selectedAnimal = '';
 	let feedback = '';
 	let randomizedAnimalList = [];
 	let clickedAnimals = new Set(); // Speichert angeklickte Tiere
+	let playerName = ''; // Spielername
 
 	// Funktion zum Randomisieren der Tierliste
 	function randomizeAnimalList(list) {
@@ -29,8 +31,40 @@
 
 		if (animal === correctAnimal) {
 			feedback = 'Richtig! Du hast das Tier erraten.';
+			triggerConfetti(); // Confetti auslösen
+			saveHighscore(); // Highscore speichern
+			randomizedAnimalList = []; // Alle Buttons entfernen
 		} else {
 			feedback = 'Leider falsch. Versuche es erneut!';
+		}
+	}
+
+	// Confetti-Animation auslösen
+	function triggerConfetti() {
+		import('canvas-confetti').then((module) => {
+			const confetti = module.default;
+			confetti({
+				spread: 100,
+				startVelocity: 30,
+				particleCount: 150,
+				zIndex: 9999,
+				origin: { x: 0.5, y: 0.5 }
+			});
+		});
+	}
+
+	function saveHighscore() {
+		if (playerName.trim() === '') {
+			alert('Bitte gib deinen Namen ein!');
+			return;
+		}
+
+		if (highscoreStore) {
+			highscoreStore.update((scores) => [
+				...scores,
+				{ name: playerName, mode: 'Wordle', correctAnimal }
+			]);
+			alert('Highscore gespeichert!');
 		}
 	}
 </script>
@@ -38,22 +72,28 @@
 <div class="wordle-container">
 	<h1>Tier-Ratespiel</h1>
 
-	<!-- Grid-Layout für die Tiere -->
-	<div class="wordle-grid">
-		{#each randomizedAnimalList as animal}
-			<button
-				class="animal-button {clickedAnimals.has(animal)
-					? animal === correctAnimal
-						? 'correct'
-						: 'wrong'
-					: ''}"
-				on:click={() => checkSelection(animal)}
-				disabled={clickedAnimals.has(animal)}
-			>
-				{animal}
-			</button>
-		{/each}
+	<!-- Namenseingabe -->
+	<div class="input-container">
+		<label for="player-name">Dein Name:</label>
+		<input
+			id="player-name"
+			type="text"
+			bind:value={playerName}
+			placeholder="Name eingeben..."
+			required
+		/>
 	</div>
+
+	<!-- Grid-Layout für die Tiere -->
+	{#if randomizedAnimalList.length > 0}
+		<div class="wordle-grid">
+			{#each randomizedAnimalList as animal}
+				<button class="animal-button" on:click={() => checkSelection(animal)}>
+					{animal}
+				</button>
+			{/each}
+		</div>
+	{/if}
 
 	<!-- Feedback für die Auswahl -->
 	{#if feedback}
@@ -62,7 +102,7 @@
 </div>
 
 <style>
-	wordle-container {
+	.wordle-container {
 		text-align: center;
 		margin-top: 20px;
 	}
@@ -72,12 +112,21 @@
 		margin-bottom: 20px;
 	}
 
+	.input-container input {
+		margin-bottom: 15px;
+		padding: 8px;
+		font-size: 16px;
+		width: calc(100% - 20px);
+		max-width: 400px;
+		border-radius: 5px;
+		border: 1px solid #ccc;
+	}
+
 	.wordle-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Dynamische Spaltenanzahl */
-		gap: 20px; /* Abstand zwischen Buttons */
-		padding: 20px; /* Padding um das Grid */
-		justify-items: center; /* Zentriert die Buttons horizontal */
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+		gap: 15px;
+		padding: 20px;
 	}
 
 	.animal-button {
@@ -87,47 +136,11 @@
 		background-color: #f0f0f0;
 		border-radius: 5px;
 		border: 1px solid #ccc;
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
-	}
-
-	.animal-button:hover:not(:disabled) {
-		background-color: #dcdcdc;
-	}
-
-	.animal-button.correct {
-		background-color: #d4edda; /* Grün für richtige Auswahl */
-		color: #155724;
-	}
-
-	.animal-button.wrong {
-		background-color: #f8d7da; /* Rot für falsche Auswahl */
-		color: #721c24;
-	}
-
-	.animal-button:disabled {
-		cursor: not-allowed;
-		opacity: 0.6; /* Ausgegraut */
 	}
 
 	.feedback {
 		font-size: 18px;
 		margin-top: 15px;
 		color: green;
-	}
-
-	@media (max-width: 768px) {
-		.animal-button {
-			font-size: 14px;
-			padding: 8px 16px;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.animal-button {
-			font-size: 12px;
-			padding: 6px 12px;
-		}
 	}
 </style>
