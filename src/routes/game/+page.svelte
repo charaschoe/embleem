@@ -14,11 +14,10 @@
 	let currentAnimal;
 
 	onMount(async () => {
-		// Randomly select an animal from the list
 		const randomIndex = Math.floor(Math.random() * animalList.length);
 		currentAnimal = animalList[randomIndex];
 		animal = currentAnimal.name;
-
+		
 		const result = await fetchUnsplashImage(animal);
 		imageUrl = result || '/static/default-animal.jpg';
 	});
@@ -35,13 +34,13 @@
 
 	<div class="game-content">
 		{#if !isWordleMode}
-			<PuzzleGrid
-				{animal}
-				{rows}
-				{cols}
-				{imageUrl}
-				{highscoreStore}
-				country={currentAnimal?.country || 'Deutschland'}
+			<PuzzleGrid 
+				{animal} 
+				{rows} 
+				{cols} 
+				{imageUrl} 
+				{highscoreStore} 
+				country={currentAnimal?.country || 'Deutschland'} 
 			/>
 		{:else}
 			<WordleMode
@@ -66,9 +65,13 @@
 
 	.mode-toggle {
 		position: relative;
-		z-index: 100;
+		z-index: 2147483647;
 		margin-bottom: 30px;
 		text-align: center;
+		background-color: var(--jungle-light);
+		padding: 10px;
+		border-radius: 8px;
+		box-shadow: 0 2px 4px var(--jungle-shadow);
 	}
 
 	.mode-toggle button {
@@ -80,6 +83,8 @@
 		border-radius: 8px;
 		cursor: pointer;
 		transition: all 0.3s ease;
+		position: relative;
+		z-index: 2147483647;
 	}
 
 	.mode-toggle button:hover {

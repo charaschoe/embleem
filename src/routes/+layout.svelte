@@ -3,8 +3,6 @@
 	<a href="/game">Spiel starten</a>
 	<a href="/highscores">Leaderboard</a>
 	<!-- Neuer Link -->
-	<a href="/animals">Nationaltiere & Wappen</a>
-	<!-- Neuer Link -->
 </nav>
 
 <slot />
