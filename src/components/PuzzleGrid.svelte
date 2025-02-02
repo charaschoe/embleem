@@ -7,7 +7,7 @@
 	export let rows = 3;
 	export let cols = 3;
 	export let imageUrl = '';
-	export let country = ''; // Neues Feld für das Land
+	export let country = '';
 
 	let hint = '';
 	let revealedTiles = Array(rows * cols).fill(false);
@@ -15,10 +15,27 @@
 	let playerName = '';
 	let isCorrect = false;
 	let counter = 0;
+	let guessedNameInput: HTMLInputElement;
 
 	onMount(async () => {
 		hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
-		imageUrl = '/static/default-animal.jpg';
+		try {
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+			const response = await fetch(
+				`https://api.unsplash.com/photos/random?query=${encodeURIComponent(animal)}%20national%20animal&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
+				{ signal: controller.signal }
+			);
+
+			clearTimeout(timeoutId);
+			const data = await response.json();
+			imageUrl = data.urls.regular;
+			guessedNameInput?.focus();
+		} catch (error) {
+			console.error('Error fetching image:', error);
+			imageUrl = '/default-animal.jpg';
+		}
 	});
 
 	function revealTile(index: number): void {
@@ -28,12 +45,17 @@
 		}
 	}
 
-	function checkGuess() {
+	function checkGuess(e: Event) {
+		e.preventDefault();
+		if (!guessedName.trim()) return;
+
 		if (guessedName.toLowerCase().trim() === animal.toLowerCase()) {
 			isCorrect = true;
 			triggerConfetti();
 		} else {
 			alert('Leider falsch. Versuche es nochmal!');
+			guessedName = '';
+			guessedNameInput?.focus();
 		}
 	}
 
@@ -42,136 +64,127 @@
 			spread: 100,
 			startVelocity: 30,
 			particleCount: 150,
-			zIndex: 9999,
+			zIndex: 2147483646,
 			origin: { x: 0.5, y: 0.5 }
 		});
 	}
 </script>
 
-<div class="puzzle-container">
+<div class="puzzle-mode">
 	<h1>Tier-Ratespiel</h1>
 
-	<!-- Eingabefelder -->
-	<div class="input-container">
-		<label for="player-name">Wie heißt du?</label>
-		<input
-			id="player-name"
-			type="text"
-			bind:value={playerName}
-			placeholder="Deinen Namen hier eingeben..."
-		/>
+	{#if !isCorrect}
+		<div class="input-container">
+			<form on:submit={checkGuess}>
+				<label for="player-name">Dein Name:</label>
+				<input
+					id="player-name"
+					type="text"
+					bind:value={playerName}
+					placeholder="Name eingeben..."
+					required
+				/>
+				<label for="guessed-name">Welches Tier ist das?</label>
+				<input
+					id="guessed-name"
+					type="text"
+					bind:value={guessedName}
+					bind:this={guessedNameInput}
+					placeholder="Tiername eingeben..."
+					required
+				/>
+				<button type="submit">Prüfen</button>
+			</form>
+		</div>
+	{/if}
 
-		<label for="guessed-name">Welches Tier siehst du?</label>
-		<input
-			id="guessed-name"
-			type="text"
-			bind:value={guessedName}
-			placeholder="Tiernamen hier eingeben..."
-		/>
-		<button on:click={checkGuess}>Antwort prüfen</button>
-	</div>
-
-	<!-- Dynamische Anzeige der Versuche -->
 	<div class="counter-box">
 		<p>Aufgedeckte Kacheln: {counter}/{rows * cols}</p>
 	</div>
 
-	<!-- Puzzle -->
-	<div
-		class="grid"
-		style="--cols: {cols}; background-image: url({imageUrl}); background-size: cover; background-position: center;"
-	>
+	<div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
 		{#each revealedTiles as revealed, index}
 			<div class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)}></div>
 		{/each}
 	</div>
 
-	<!-- Ergebnisanzeige -->
 	{#if isCorrect}
-		<p class="success">Super gemacht! Das Tier ist ein {animal}, das Nationaltier von {country}.</p>
+		<p class="success">
+			Super gemacht {playerName}! Das Tier ist ein {animal}, das Nationaltier von {country}.
+		</p>
 	{/if}
 </div>
 
 <style>
-	.puzzle-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: 90%;
+	.puzzle-mode {
+		--z-index-inputs: 2147483647;
+		position: relative;
+		width: 100%;
+		max-width: 800px;
 		margin: 0 auto;
-		text-align: center;
-	}
-
-	h1 {
-		font-size: 2.5rem;
-		color: #2c3e50;
-		margin-bottom: 20px;
+		padding: 20px;
 	}
 
 	.input-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 15px;
+		position: relative;
+		z-index: var(--z-index-inputs);
 		margin-bottom: 20px;
 	}
 
-	.input-container label {
-		font-size: 1.2rem;
-		font-weight: bold;
-		color: #555;
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 	}
 
-	.input-container input {
-		width: 300px;
-		padding: 10px;
-		font-size: 1.2rem;
-		border-radius: 5px;
-		border: 1px solid #ccc;
-		text-align: center;
-	}
-
-	.input-container button {
-		padding: 10px 20px;
-		font-size: 1.2rem;
-		cursor: pointer;
-		background-color: #007bff;
-		color: white;
-		border-radius: 5 px;
-		border: none;
-	}
-
-	.input-container button:hover {
-		background-color: #0056b3;
-	}
-
-	.counter-box p {
-		font-size: 1 rem;
-		color: #333;
-		margin-top: 10 px;
-		text-align: center;
+	input {
+		padding: 12px;
+		border: 2px solid #007bff;
+		border-radius: 8px;
+		font-size: 1.1rem;
 	}
 
 	.grid {
+		position: relative;
 		display: grid;
-		grid-template-columns: repeat(var(--cols), 1 fr);
-		width: 300 px;
-		height: 300 px;
-		gap: 5 px;
-		margin-top: 20 px;
-		text-align: center;
+		grid-template-columns: repeat(var(--cols), 1fr);
+		width: min(90vw, 400px);
+		height: min(90vw, 400px);
+		gap: 4px;
+		margin: 20px auto;
+		background-size: cover;
+		background-position: center;
+	}
+
+	.tile {
+		background: rgba(0, 0, 0, 0.85);
+		cursor: pointer;
+		transition: all 0.3s ease;
 	}
 
 	.tile.revealed {
-		background-color: transparent;
+		background: transparent;
 		pointer-events: none;
 	}
 
 	.success {
 		color: #28a745;
-		font-size: 1 rem;
-		font-weight: bold;
-		margin-top: 15 px;
-		text-align: center;
+		padding: 15px;
+		border-radius: 8px;
+		background: rgba(40, 167, 69, 0.1);
+	}
+
+	button {
+		padding: 12px;
+		background: #007bff;
+		color: white;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 1.1rem;
+	}
+
+	button:hover {
+		background: #0056b3;
 	}
 </style>

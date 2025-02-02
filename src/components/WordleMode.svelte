@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
+	import confetti from 'canvas-confetti';
 
-	// Props für die Tierliste und den korrekten Tiernamen
 	export let animalList = [];
 	export let correctAnimal = '';
 	export let highscoreStore;
@@ -9,47 +9,40 @@
 	let selectedAnimal = '';
 	let feedback = '';
 	let randomizedAnimalList = [];
-	let clickedAnimals = new Set(); // Speichert angeklickte Tiere
-	let playerName = ''; // Spielername
+	let clickedAnimals = new Set();
+	let playerName = '';
 
-	// Funktion zum Randomisieren der Tierliste
 	function randomizeAnimalList(list) {
 		return [...list].sort(() => Math.random() - 0.5);
 	}
 
-	// Liste der Tiere randomisieren beim Laden
 	onMount(() => {
 		randomizedAnimalList = randomizeAnimalList(animalList);
 	});
 
-	// Überprüfen, ob das ausgewählte Tier korrekt ist
 	function checkSelection(animal) {
-		if (clickedAnimals.has(animal)) return; // Überspringen, wenn bereits angeklickt
+		if (clickedAnimals.has(animal)) return;
 
 		clickedAnimals.add(animal);
 		selectedAnimal = animal;
 
 		if (animal === correctAnimal) {
 			feedback = 'Richtig! Du hast das Tier erraten.';
-			triggerConfetti(); // Confetti auslösen
-			saveHighscore(); // Highscore speichern
-			randomizedAnimalList = []; // Alle Buttons entfernen
+			triggerConfetti();
+			saveHighscore();
+			randomizedAnimalList = [];
 		} else {
 			feedback = 'Leider falsch. Versuche es erneut!';
 		}
 	}
 
-	// Confetti-Animation auslösen
 	function triggerConfetti() {
-		import('canvas-confetti').then((module) => {
-			const confetti = module.default;
-			confetti({
-				spread: 100,
-				startVelocity: 30,
-				particleCount: 150,
-				zIndex: 9999,
-				origin: { x: 0.5, y: 0.5 }
-			});
+		confetti({
+			spread: 100,
+			startVelocity: 30,
+			particleCount: 150,
+			zIndex: 2147483645,
+			origin: { x: 0.5, y: 0.5 }
 		});
 	}
 
@@ -69,10 +62,9 @@
 	}
 </script>
 
-<div class="wordle-container">
+<div class="wordle-mode">
 	<h1>Tier-Ratespiel</h1>
 
-	<!-- Namenseingabe -->
 	<div class="input-container">
 		<label for="player-name">Dein Name:</label>
 		<input
@@ -84,42 +76,45 @@
 		/>
 	</div>
 
-	<!-- Grid-Layout für die Tiere -->
 	{#if randomizedAnimalList.length > 0}
 		<div class="wordle-grid">
 			{#each randomizedAnimalList as animal}
-				<button class="animal-button" on:click={() => checkSelection(animal)}>
+				<button
+					class="animal-button {clickedAnimals.has(animal) ? 'clicked' : ''}"
+					on:click={() => checkSelection(animal)}
+				>
 					{animal}
 				</button>
 			{/each}
 		</div>
 	{/if}
 
-	<!-- Feedback für die Auswahl -->
 	{#if feedback}
 		<p class="feedback">{feedback}</p>
 	{/if}
 </div>
 
 <style>
-	.wordle-container {
+	.wordle-mode {
+		position: relative;
+		width: 100%;
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 20px;
 		text-align: center;
-		margin-top: 20px;
 	}
 
-	h1 {
-		font-size: 24px;
+	.input-container {
 		margin-bottom: 20px;
 	}
 
-	.input-container input {
-		margin-bottom: 15px;
-		padding: 8px;
-		font-size: 16px;
-		width: calc(100% - 20px);
-		max-width: 400px;
-		border-radius: 5px;
-		border: 1px solid #ccc;
+	input {
+		padding: 12px;
+		width: 100%;
+		max-width: 300px;
+		border: 2px solid #007bff;
+		border-radius: 8px;
+		font-size: 1.1rem;
 	}
 
 	.wordle-grid {
@@ -130,17 +125,30 @@
 	}
 
 	.animal-button {
-		padding: 10px 20px;
-		font-size: 16px;
+		padding: 15px;
+		font-size: 1.1rem;
+		background: #f0f0f0;
+		border: 2px solid #007bff;
+		border-radius: 8px;
 		cursor: pointer;
-		background-color: #f0f0f0;
-		border-radius: 5px;
-		border: 1px solid #ccc;
+		transition: all 0.3s ease;
+	}
+
+	.animal-button:hover {
+		background: #e0e0e0;
+	}
+
+	.animal-button.clicked {
+		background: #ccc;
+		cursor: not-allowed;
 	}
 
 	.feedback {
-		font-size: 18px;
-		margin-top: 15px;
-		color: green;
+		font-size: 1.2rem;
+		margin-top: 20px;
+		padding: 15px;
+		border-radius: 8px;
+		background: rgba(40, 167, 69, 0.1);
+		color: #28a745;
 	}
 </style>
