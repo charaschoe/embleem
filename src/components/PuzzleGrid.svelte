@@ -117,18 +117,17 @@
 
 <style>
 	.puzzle-mode {
-		--z-index-inputs: 2147483647;
-		position: relative;
-		width: 100%;
-		max-width: 800px;
-		margin: 0 auto;
+		background-color: rgba(255, 255, 255, 0.95);
+		border-radius: 15px;
+		border: 3px solid var(--jungle-primary);
+		box-shadow: 0 4px 15px var(--jungle-shadow);
 		padding: 20px;
 	}
 
 	.input-container {
-		position: relative;
-		z-index: var(--z-index-inputs);
-		margin-bottom: 20px;
+		background-color: var(--jungle-light);
+		border-radius: 10px;
+		padding: 15px;
 	}
 
 	form {
@@ -150,10 +149,12 @@
 		grid-template-columns: repeat(var(--cols), 1fr);
 		width: min(90vw, 400px);
 		height: min(90vw, 400px);
-		gap: 4px;
 		margin: 20px auto;
 		background-size: cover;
 		background-position: center;
+		border: 3px solid var(--jungle-primary);
+		border-radius: 10px;
+		overflow: hidden;
 	}
 
 	.tile {
@@ -168,23 +169,22 @@
 	}
 
 	.success {
-		color: #28a745;
-		padding: 15px;
-		border-radius: 8px;
-		background: rgba(40, 167, 69, 0.1);
+		background-color: var(--jungle-secondary);
+		color: white;
 	}
 
 	button {
 		padding: 12px;
-		background: #007bff;
-		color: white;
+		background-color: var(--jungle-primary);
+		color: rgb(255, 255, 255);
 		border: none;
 		border-radius: 8px;
 		cursor: pointer;
 		font-size: 1.1rem;
+		transition: all 0.3s ease;
 	}
 
 	button:hover {
-		background: #0056b3;
+		background-color: var(--jungle-dark);
 	}
 </style>
