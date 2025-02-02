@@ -1,4 +1,27 @@
+/* src/app.css */
+:root {
+	--jungle-primary: #2e7d32;
+	--jungle-secondary: #4caf50;
+	--jungle-light: #81c784;
+	--jungle-dark: #1b5e20;
+	--jungle-accent: #ffd700;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
+	background-color: var(--jungle-light);
+	color: var(--jungle-dark);
+}
+
+.button-primary {
+	background-color: var(--jungle-primary);
+	color: white;
+}
+
+.button-primary:hover {
+	background-color: var(--jungle-dark);
+}
+
+.success-message {
+	background-color: var(--jungle-secondary);
+	color: white;
 }
