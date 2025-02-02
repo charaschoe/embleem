@@ -79,6 +79,11 @@
 	<!-- Debug Information -->
 	<p class="debug-info">{debugAnimalName}</p>
 
+	<!-- Neue Länder-Information -->
+	<div class="country-info">
+		<p>Finde das Nationaltier von {country}!</p>
+	</div>
+
 	{#if !isCorrect}
 		<div class="input-container">
 			<form on:submit={checkGuess}>
@@ -200,5 +205,20 @@
 		font-style: italic;
 		font-size: small;
 		margin-bottom: 10px;
+	}
+
+	.country-info {
+		background-color: var(--jungle-light);
+		padding: 12px;
+		border-radius: 8px;
+		margin-bottom: 20px;
+		text-align: center;
+		border: 2px solid var(--jungle-primary);
+	}
+
+	.country-info p {
+		margin: 0;
+		font-size: 1.2rem;
+		color: var(--jungle-text);
 	}
 </style>
