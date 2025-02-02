@@ -6,13 +6,19 @@
 	import { animalList } from '../../lib/animalList.js';
 	import { fetchUnsplashImage } from '../../lib/unsplash.js';
 
-	let animal = 'Elefant';
+	let animal = '';
 	let isWordleMode = false;
 	let imageUrl = '';
 	let rows = 3;
 	let cols = 3;
+	let currentAnimal;
 
 	onMount(async () => {
+		// Randomly select an animal from the list
+		const randomIndex = Math.floor(Math.random() * animalList.length);
+		currentAnimal = animalList[randomIndex];
+		animal = currentAnimal.name;
+
 		const result = await fetchUnsplashImage(animal);
 		imageUrl = result || '/static/default-animal.jpg';
 	});
@@ -29,7 +35,14 @@
 
 	<div class="game-content">
 		{#if !isWordleMode}
-			<PuzzleGrid {animal} {rows} {cols} {imageUrl} {highscoreStore} country="Deutschland" />
+			<PuzzleGrid
+				{animal}
+				{rows}
+				{cols}
+				{imageUrl}
+				{highscoreStore}
+				country={currentAnimal?.country || 'Deutschland'}
+			/>
 		{:else}
 			<WordleMode
 				animalList={animalList.map((a) => a.name)}
@@ -48,6 +61,7 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 20px;
+		background-color: var(--jungle-light);
 	}
 
 	.mode-toggle {
@@ -60,16 +74,21 @@
 	.mode-toggle button {
 		padding: 12px 24px;
 		font-size: 1.1rem;
-		background-color: #007bff;
+		background-color: var(--jungle-primary);
 		color: white;
 		border: none;
 		border-radius: 8px;
 		cursor: pointer;
-		transition: background-color 0.3s ease;
+		transition: all 0.3s ease;
 	}
 
 	.mode-toggle button:hover {
-		background-color: #0056b3;
+		background-color: var(--jungle-dark);
+		transform: translateY(-2px);
+	}
+
+	.mode-toggle button:active {
+		transform: translateY(0);
 	}
 
 	.game-content {
@@ -79,7 +98,9 @@
 
 	h1 {
 		text-align: center;
-		color: #2c3e50;
+		color: var(--jungle-text);
 		margin-bottom: 30px;
+		font-size: 2.5rem;
+		text-shadow: 2px 2px 4px var(--jungle-shadow);
 	}
 </style>

@@ -18,7 +18,7 @@
 	let guessedNameInput: HTMLInputElement;
 
 	// Debug: Display internal animal name
-	let debugAnimalName = `Internal Animal Name: ${animal}`;
+	$: debugAnimalName = `Internal Animal Name: ${animal} (Country: ${country})`;
 
 	onMount(async () => {
 		hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
