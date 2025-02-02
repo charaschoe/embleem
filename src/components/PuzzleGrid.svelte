@@ -17,6 +17,9 @@
 	let counter = 0;
 	let guessedNameInput: HTMLInputElement;
 
+	// Debug: Display internal animal name
+	let debugAnimalName = `Internal Animal Name: ${animal}`;
+
 	onMount(async () => {
 		hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
 		try {
@@ -72,6 +75,9 @@
 
 <div class="puzzle-mode">
 	<h1>Tier-Ratespiel</h1>
+
+	<!-- Debug Information -->
+	<p class="debug-info">{debugAnimalName}</p>
 
 	{#if !isCorrect}
 		<div class="input-container">
@@ -186,5 +192,13 @@
 
 	button:hover {
 		background-color: var(--jungle-dark);
+	}
+
+	/* Debug Info Styling */
+	.debug-info {
+		color: red;
+		font-style: italic;
+		font-size: small;
+		margin-bottom: 10px;
 	}
 </style>
