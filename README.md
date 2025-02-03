@@ -5,6 +5,12 @@ Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "
 **Frontend**: SvelteKit mit TypeScript  
 **Styling**: CSS mit Jungle-Theme  
 **APIs**: Unsplash (Tierbilder) + FlagCDN (Länderflaggen)  
+**Bibliotheken**:
+- `canvas-confetti` für Konfetti-Animationen
+- `axios` für HTTP-Anfragen
+- `dotenv` für Umgebungsvariablen
+- `express` für den Server
+- `svelte/store` für State Management
 
 ```
 text
@@ -27,22 +33,26 @@ text
 └── static/               # Assets
 ```
 
-## ✨ Kernfunktionen  
-**🧩 Puzzle-Modus**  
-- Progressives Aufdecken von 9 Bildkacheln  
-- Dynamische Unsplash-Integration  
-- Fehlertolerante Eingabe ("tiger" → "Malaiischer Tiger")  
+## ✨ Kernfunktionen
 
-**🎯 Wordle-Modus**  
-- 14 auswählbare Nationaltiere  
-- Highscore-System für beide Modi  
-- Konfetti-Animation bei Erfolg  
+### 🧩 Puzzle-Modus
 
-**👶 Kindgerechte Umsetzung**  
-- Jungle-Theme mit Grüntönen  
-- Responsives Grid-Layout  
-- Große Buttons (ab 150px)  
-- Lazy Loading für Bilder  
+- **Progressives Aufdecken von 9 Bildkacheln**: In diesem Modus wird ein Bild in 9 Kacheln aufgeteilt, die nach und nach aufgedeckt werden. Der Benutzer muss erraten, was auf dem Bild zu sehen ist, bevor alle Kacheln aufgedeckt sind.
+- **Dynamische Unsplash-Integration**: Die Bilder werden dynamisch von der Unsplash API geladen, was bedeutet, dass jedes Spiel neue und unterschiedliche Bilder verwendet.
+- **Fehlertolerante Eingabe**: Das System ist in der Lage, ähnliche Begriffe zu erkennen und zu akzeptieren. Zum Beispiel wird "tiger" als "Malaiischer Tiger" erkannt und akzeptiert.
+
+### 🎯 Wordle-Modus
+
+- **14 auswählbare Nationaltiere**: In diesem Modus kann der Benutzer aus 14 verschiedenen Nationaltieren wählen und muss das richtige Tier erraten.
+- **Highscore-System für beide Modi**: Beide Spielmodi haben ein Highscore-System, das die besten Ergebnisse der Benutzer speichert und anzeigt.
+- **Konfetti-Animation bei Erfolg**: Wenn der Benutzer erfolgreich das richtige Tier errät, wird eine Konfetti-Animation angezeigt, um den Erfolg zu feiern.
+
+### 👶 Kindgerechte Umsetzung
+
+- **Jungle-Theme mit Grüntönen**: Das Design des Spiels ist kindgerecht und verwendet ein Dschungel-Thema mit vielen Grüntönen, um eine ansprechende und freundliche Umgebung zu schaffen.
+- **Responsives Grid-Layout**: Das Layout des Spiels ist responsiv und passt sich verschiedenen Bildschirmgrößen an, um eine optimale Benutzererfahrung auf allen Geräten zu gewährleisten.
+- **Große Buttons (ab 150px)**: Die Buttons im Spiel sind groß (mindestens 150px), um es Kindern zu erleichtern, sie zu drücken.
+- **Lazy Loading für Bilder**: Bilder werden nur geladen, wenn sie benötigt werden, was die Ladezeiten verkürzt und die Leistung verbessert.
 
 ## 🚀 Installation  
 ```bash
@@ -70,7 +80,7 @@ Entwickelt im Wintersemester 2023/24 bei Prof. Fabian Rauch ([@caitoor](https://
 
 ## 🌐 Roadmap  
 - [ ] Mehrsprachiger Support  
-- [ ] Offline-Modus  
+- [ ] Mobile-Modus  
 - [ ] Tierdatenbank-Erweiterung  
 - [ ] Multiplayer-Funktionen  
 
@@ -81,7 +91,7 @@ Entwickelt im Wintersemester 2023/24 bei Prof. Fabian Rauch ([@caitoor](https://
 
 **Lizenz**: MIT  
 **Kontakt**: [Jonas Wienberg](mailto:jonas.wienberg@hfg-gmuend.de)  
-GitHub: [charaschoe]  
+GitHub: [@charaschoe]  
 
 ---
 Entwickelt mit ❤️ an der HfG Schwäbisch Gmünd
