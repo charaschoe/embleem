@@ -1,109 +1,87 @@
-# Tier-Ratespiel: Entdecke die Nationaltiere der Welt 🌍
-
+# Tier-Ratespiel: Entdecke die Nationaltiere der Welt 🌍  
 Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "Programmiersprachen 3" an der HfG Schwäbisch Gmünd.
 
-## ✨ Features
-- 🧩 Puzzle-Modus mit aufdeckbaren Bildkacheln
-- 🎯 Wordle-ähnlicher Ratemodus
-- 🎨 Kindgerechtes Dschungel-Design
-- 🏳️ Integration von Länderflaggen via FlagCDN
-- 📸 Dynamische Tierbilder von Unsplash
-- 💾 Lokale Highscore-Speicherung
-- 🎮 Zwei verschiedene Spielmodi
-- 🌍 Lehrreiche Informationen über Nationaltiere
-- 🎯 Einfache und intuitive Benutzeroberfläche
-- 🏆 Highscore-System für beide Spielmodi
-- 🎉 Konfetti-Animation bei korrekten Antworten
+## 📁 Projektarchitektur & Technischer Stack  
+**Frontend**: SvelteKit mit TypeScript  
+**Styling**: CSS mit Jungle-Theme  
+**APIs**: Unsplash (Tierbilder) + FlagCDN (Länderflaggen)  
 
-## 🛠️ Technologien
-- **Frontend**: SvelteKit
-- **Styling**: CSS mit Jungle-Theme
-- **APIs**: 
-  - Unsplash API für Tierbilder
-  - FlagCDN für Länderflaggen
+```
+text
+├── .svelte-kit/
+├── node_modules/
+├── src/
+│   ├── components/        
+│   │   ├── PuzzleGrid.svelte    # 3x3 Grid-System
+│   │   └── WordleMode.svelte    # Barrierefreie Klick-Interface
+│   ├── lib/              
+│   │   ├── animalList.js        # 14 Nationaltiere
+│   │   ├── countryUtils.js      # Länder-Mapping
+│   │   ├── highscoreStore.js   # Lokale Speicherung
+│   │   └── unsplash.js         # Bildintegration
+│   ├── routes/           
+│   │   ├── game/+page.svelte    # Kernspiellogik
+│   │   └── +layout.svelte       # Navigation
+│   ├── app.css           # Globale Styles
+│   └── app.html          # HTML-Template
+└── static/               # Assets
+```
 
-## 🚀 Installation & Setup
+## ✨ Kernfunktionen  
+**🧩 Puzzle-Modus**  
+- Progressives Aufdecken von 9 Bildkacheln  
+- Dynamische Unsplash-Integration  
+- Fehlertolerante Eingabe ("tiger" → "Malaiischer Tiger")  
 
+**🎯 Wordle-Modus**  
+- 14 auswählbare Nationaltiere  
+- Highscore-System für beide Modi  
+- Konfetti-Animation bei Erfolg  
+
+**👶 Kindgerechte Umsetzung**  
+- Jungle-Theme mit Grüntönen  
+- Responsives Grid-Layout  
+- Große Buttons (ab 150px)  
+- Lazy Loading für Bilder  
+
+## 🚀 Installation  
 ```bash
-# Repository klonen
 git clone https://github.com/username/tier-ratespiel.git
-
-# Ins Projektverzeichnis wechseln
 cd tier-ratespiel
-
-# Abhängigkeiten installieren
 npm install
-
-# Entwicklungsserver starten
 npm run dev
 ```
 
-## ⚙️ Konfiguration
-Erstellen Sie eine `.env` Datei im Wurzelverzeichnis:
+## ⚙️ Konfiguration  
+`.env`-Datei erstellen:  
 ```env
-VITE_UNSPLASH_ACCESS_KEY=ihr_unsplash_key
+VITE_UNSPLASH_ACCESS_KEY=ihr_key
 ```
 
-## 📁 Projektstruktur
-```
-src/
-├── components/
-│   ├── PuzzleGrid.svelte
-│   └── WordleMode.svelte
-├── lib/
-│   ├── animalList.js
-│   ├── countryUtils.js
-│   ├── highscoreStore.js
-│   └── unsplash.js
-├── routes/
-│   ├── game/
-│   │   └── +page.svelte
-│   └── +layout.svelte
-└── app.css
-```
+## 🎮 Spielmechanik  
+| Feature               | Puzzle-Modus         | Wordle-Modus         |
+|-----------------------|----------------------|----------------------|
+| Eingabemethode        | Texteingabe          | Klick-Interface      |
+| Fortschrittsanzeige   | X/9 Kacheln          | Versuchsanzahl       |
+| Besonderheiten        | Debug-Modus          | Länderflaggen        |
 
-## 🎮 Spielmodi
+## 📜 Projektkontext  
+Entwickelt im Wintersemester 2023/24 bei Prof. Fabian Rauch ([@caitoor](https://github.com/caitoor)) an der HfG Schwäbisch Gmünd. Zielgruppe: Kinder von 6-8 Jahren.
 
-### Puzzle-Modus
-- Aufdecken von Bildkacheln durch Klicken
-- Eingabe des Tiernamens
-- Anzeige von Länderflagge und kulturellen Informationen
-- Konfetti-Animation bei korrekter Antwort
+## 🌐 Roadmap  
+- [ ] Mehrsprachiger Support  
+- [ ] Offline-Modus  
+- [ ] Tierdatenbank-Erweiterung  
+- [ ] Multiplayer-Funktionen  
 
-### Wordle-Modus
-- Auswahl aus vorgegebenen Tiernamen
-- Namenseingabe vor Spielbeginn
-- Fortschrittsanzeige der Versuche
-- Highscore-Speicherung
+## 🙏 Danksagungen  
+- Unsplash für Tierbilder  
+- FlagCDN für Flaggen  
+- HfG Gmünd für Infrastruktur  
 
-## 🎯 Entwicklungsziele
-- [ ] Mehrsprachige Unterstützung
-- [ ] Zusätzliche Spielmodi
-- [ ] Erweiterung der Tierdatenbank
-- [ ] Offline-Modus
-- [ ] Multiplayer-Funktionen
-
-## 👥 Zielgruppe
-- Hauptzielgruppe: Kinder im Alter von 6-8 Jahren
-- Bildungseinrichtungen
-- Familien
-
-## 📝 Projektkontext
-Entwickelt als Semesterprojekt im Kurs "Programmiersprachen 3" bei Prof. Fabian Rauch an der Hochschule für Gestaltung Schwäbisch Gmünd, Wintersemester 2023/24.
-
-## 📜 Lizenz
-Dieses Projekt ist unter der MIT-Lizenz lizenziert.
-
-## 🙏 Danksagungen
-- Unsplash für die Tierbilder
-- FlagCDN für die Länderflaggen
-- Prof. Fabian Rauch ([@caitoor](https://github.com/caitoor)) für die Betreuung
-- Hochschule für Gestaltung Schwäbisch Gmünd
-
-## 📞 Kontakt
-Jonas Wienberg
-- GitHub: [charaschoe]
-- E-Mail: jonas.wienberg@hfg-gmuend.de
+**Lizenz**: MIT  
+**Kontakt**: [Jonas Wienberg](mailto:jonas.wienberg@hfg-gmuend.de)  
+GitHub: [charaschoe]  
 
 ---
 Entwickelt mit ❤️ an der HfG Schwäbisch Gmünd
