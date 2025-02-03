@@ -1,23 +1,31 @@
 <script>
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
+	import { getCountryFlag } from '$lib/unsplash';
 
 	export let animalList = [];
 	export let correctAnimal = '';
 	export let highscoreStore;
+	export let country = '';
 
 	let selectedAnimal = '';
 	let feedback = '';
 	let randomizedAnimalList = [];
 	let clickedAnimals = new Set();
 	let playerName = '';
+	let countryFlag = '';
 
 	function randomizeAnimalList(list) {
 		return [...list].sort(() => Math.random() - 0.5);
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		randomizedAnimalList = randomizeAnimalList(animalList);
+		// Get country flag
+		if (country) {
+			const countryCode = getCountryCode(country);
+			countryFlag = await getCountryFlag(countryCode);
+		}
 	});
 
 	function checkSelection(animal) {
@@ -65,6 +73,13 @@
 <div class="wordle-mode">
 	<h1>Tier-Ratespiel</h1>
 
+	<div class="country-info">
+		{#if countryFlag}
+			<img src={countryFlag} alt="Flagge von {country}" class="country-flag" />
+		{/if}
+		<p>Finde das Nationaltier von {country}!</p>
+	</div>
+
 	<div class="input-container">
 		<label for="player-name">Dein Name:</label>
 		<input
@@ -102,6 +117,28 @@
 		margin: 0 auto;
 		padding: 20px;
 		text-align: center;
+		background-color: rgba(255, 255, 255, 0.95);
+		border-radius: 15px;
+		border: 3px solid var(--jungle-primary);
+		box-shadow: 0 4px 15px var(--jungle-shadow);
+	}
+
+	.country-info {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		margin-bottom: 20px;
+		padding: 10px;
+		background-color: var(--jungle-light);
+		border-radius: 8px;
+	}
+
+	.country-flag {
+		width: 32px;
+		height: auto;
+		border: 1px solid var(--jungle-shadow);
+		border-radius: 4px;
 	}
 
 	.input-container {
@@ -112,7 +149,7 @@
 		padding: 12px;
 		width: 100%;
 		max-width: 300px;
-		border: 2px solid #007bff;
+		border: 2px solid var(--jungle-primary);
 		border-radius: 8px;
 		font-size: 1.1rem;
 	}
@@ -127,19 +164,23 @@
 	.animal-button {
 		padding: 15px;
 		font-size: 1.1rem;
-		background: #f0f0f0;
-		border: 2px solid #007bff;
+		background: var(--jungle-light);
+		border: 2px solid var(--jungle-primary);
 		border-radius: 8px;
 		cursor: pointer;
 		transition: all 0.3s ease;
+		color: var(--jungle-text);
 	}
 
 	.animal-button:hover {
-		background: #e0e0e0;
+		background: var(--jungle-secondary);
+		color: white;
+		transform: translateY(-2px);
 	}
 
 	.animal-button.clicked {
-		background: #ccc;
+		background: var(--jungle-dark);
+		color: white;
 		cursor: not-allowed;
 	}
 
@@ -148,7 +189,7 @@
 		margin-top: 20px;
 		padding: 15px;
 		border-radius: 8px;
-		background: rgba(40, 167, 69, 0.1);
-		color: #28a745;
+		background: var(--jungle-secondary);
+		color: white;
 	}
 </style>
