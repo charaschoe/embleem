@@ -1,3 +1,5 @@
+const FLAGCDN_BASE_URL = 'https://flagcdn.com';
+
 export async function fetchUnsplashImage(query) {
 	const accessKey = '5HoX7yIU_e7Blnn4x4Hw49z7SzOX0mMfPT1jNrmy9Sw'; // Dein Unsplash Access Key
 	const apiUrl = `https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}`;
@@ -19,5 +21,15 @@ export async function fetchUnsplashImage(query) {
 	} catch (error) {
 		console.error('Fehler beim Abrufen der Unsplash-API:', error);
 		return null;
+	}
+}
+
+export async function getCountryFlag(countryCode) {
+	try {
+		// Use flagcdn.com which is free and reliable
+		return `${FLAGCDN_BASE_URL}/w320/${countryCode.toLowerCase()}.png`;
+	} catch (error) {
+		console.error('Error fetching flag:', error);
+		return '/default-flag.png';
 	}
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
+	import { animalList } from '../lib/animalList';
 
 	export let highscoreStore;
 	export let animal: string;
@@ -52,7 +53,16 @@
 		e.preventDefault();
 		if (!guessedName.trim()) return;
 
-		if (guessedName.toLowerCase().trim() === animal.toLowerCase()) {
+		const guess = guessedName.toLowerCase().trim();
+		const currentAnimal = animalList.find((a) => a.name === animal);
+
+		// Check if guess matches any synonym or the main name
+		const isCorrectGuess =
+			currentAnimal?.synonyms.includes(guess) ||
+			guess === animal.toLowerCase() ||
+			guess === currentAnimal?.name.toLowerCase();
+
+		if (isCorrectGuess) {
 			isCorrect = true;
 			triggerConfetti();
 		} else {
@@ -78,11 +88,6 @@
 
 	<!-- Debug Information -->
 	<p class="debug-info">{debugAnimalName}</p>
-
-	<!-- Neue Länder-Information -->
-	<div class="country-info">
-		<p>Finde das Nationaltier von {country}!</p>
-	</div>
 
 	{#if !isCorrect}
 		<div class="input-container">
@@ -121,7 +126,8 @@
 
 	{#if isCorrect}
 		<p class="success">
-			Super gemacht {playerName}! Das Tier ist ein {animal}, das Nationaltier von {country}.
+			Super gemacht {playerName}! Das Tier ist ein {animal} (der vollständige Name ist: {animal}),
+			das Nationaltier von {country}.
 		</p>
 	{/if}
 </div>
@@ -149,9 +155,16 @@
 
 	input {
 		padding: 12px;
-		border: 2px solid #007bff;
+		border: 2px solid var(--jungle-primary);
 		border-radius: 8px;
 		font-size: 1.1rem;
+		background-color: rgba(255, 255, 255, 0.9);
+	}
+
+	input:focus {
+		border-color: var(--jungle-accent);
+		outline: none;
+		box-shadow: 0 0 5px var(--jungle-shadow);
 	}
 
 	.grid {
@@ -174,6 +187,11 @@
 		transition: all 0.3s ease;
 	}
 
+	.tile:hover {
+		background: rgba(0, 0, 0, 0.7);
+		transform: scale(0.98);
+	}
+
 	.tile.revealed {
 		background: transparent;
 		pointer-events: none;
@@ -182,12 +200,15 @@
 	.success {
 		background-color: var(--jungle-secondary);
 		color: white;
+		padding: 15px;
+		border-radius: 8px;
+		margin: 10px 0;
 	}
 
 	button {
 		padding: 12px;
 		background-color: var(--jungle-primary);
-		color: rgb(255, 255, 255);
+		color: white;
 		border: none;
 		border-radius: 8px;
 		cursor: pointer;
@@ -197,9 +218,13 @@
 
 	button:hover {
 		background-color: var(--jungle-dark);
+		transform: translateY(-2px);
 	}
 
-	/* Debug Info Styling */
+	button:active {
+		transform: translateY(0);
+	}
+
 	.debug-info {
 		color: red;
 		font-style: italic;

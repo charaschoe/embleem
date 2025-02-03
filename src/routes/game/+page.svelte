@@ -4,7 +4,8 @@
 	import WordleMode from '../../components/WordleMode.svelte';
 	import { highscoreStore } from '../../lib/highscoreStore.js';
 	import { animalList } from '../../lib/animalList.js';
-	import { fetchUnsplashImage } from '../../lib/unsplash.js';
+	import { fetchUnsplashImage, getCountryFlag } from '../../lib/unsplash.js';
+	import { getCountryCode } from '../../lib/countryUtils.js';
 
 	let animal = '';
 	let isWordleMode = false;
@@ -12,6 +13,7 @@
 	let rows = 3;
 	let cols = 3;
 	let currentAnimal;
+	let countryFlag = '';
 
 	onMount(async () => {
 		const randomIndex = Math.floor(Math.random() * animalList.length);
@@ -20,6 +22,12 @@
 		
 		const result = await fetchUnsplashImage(animal);
 		imageUrl = result || '/static/default-animal.jpg';
+
+		// Get country flag
+		if (currentAnimal?.country) {
+			const countryCode = getCountryCode(currentAnimal.country);
+			countryFlag = await getCountryFlag(countryCode);
+		}
 	});
 </script>
 
@@ -30,6 +38,17 @@
 		<button on:click={() => (isWordleMode = !isWordleMode)}>
 			{isWordleMode ? 'Zum Puzzle-Modus wechseln' : 'Zum Wordle-Modus wechseln'}
 		</button>
+	</div>
+
+	<div class="country-info">
+		{#if countryFlag}
+			<img 
+				src={countryFlag} 
+				alt="Flagge von {currentAnimal?.country}" 
+				class="country-flag"
+			/>
+		{/if}
+		<p>Finde das Nationaltier von {currentAnimal?.country}!</p>
 	</div>
 
 	<div class="game-content">
@@ -94,6 +113,21 @@
 
 	.mode-toggle button:active {
 		transform: translateY(0);
+	}
+
+	.country-info {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 20px;
+	}
+
+	.country-flag {
+		width: 32px;
+		height: auto;
+		margin-right: 10px;
+		border: 1px solid var(--jungle-shadow);
+		border-radius: 4px;
 	}
 
 	.game-content {
