@@ -1,249 +1,379 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import confetti from 'canvas-confetti';
-	import { animalList } from '../lib/animalList';
+    import { onMount } from 'svelte';
+    import confetti from 'canvas-confetti';
+    import { animalList } from '../lib/animalList';
 
-	export let highscoreStore;
-	export let animal: string;
-	export let rows = 3;
-	export let cols = 3;
-	export let imageUrl = '';
-	export let country = '';
+    export let highscoreStore;
+    export let animal: string;
+    export let rows = 3;
+    export let cols = 3;
+    export let imageUrl = '';
+    export let country = '';
 
-	let hint = '';
-	let revealedTiles = Array(rows * cols).fill(false);
-	let guessedName = '';
-	let playerName = '';
-	let isCorrect = false;
-	let counter = 0;
-	let guessedNameInput: HTMLInputElement;
+    let hint = '';
+    let revealedTiles = Array(rows * cols).fill(false);
+    let guessedName = '';
+    let playerName = '';
+    let isCorrect = false;
+    let counter = 0;
+    let guessedNameInput: HTMLInputElement;
+    let showGame = false;
+    let countdown = 4;
+    let showCountdown = false;
+    let points = 100;
 
-	// Debug: Display internal animal name
-	$: debugAnimalName = `Internal Animal Name: ${animal} (Country: ${country})`;
+    // Debug: Display internal animal name
+    $: debugAnimalName = `Internal Animal Name: ${animal} (Country: ${country})`;
 
-	onMount(async () => {
-		hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
-		try {
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const placeholderNames = [
+        'Kleiner Panda', 'Süße Giraffe', 'Fröhlicher Pinguin', 'Niedlicher Koala',
+        'Bunter Papagei', 'Sanfter Delfin', 'Lustiger Otter', 'Schlauer Fuchs',
+        'Munteres Känguru', 'Treuer Elefant',
+        'Safari Scout', 'Dschungel Entdecker', 'Tierfreund', 'Naturkenner',
+        'Tierspürer', 'Waldläufer', 'Savannen Guide'
+    ];
 
-			const response = await fetch(
-				`https://api.unsplash.com/photos/random?query=${encodeURIComponent(animal)}%20national%20animal&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
-				{ signal: controller.signal }
-			);
+    function generateRandomName() {
+        playerName = placeholderNames[Math.floor(Math.random() * placeholderNames.length)];
+    }
 
-			clearTimeout(timeoutId);
-			const data = await response.json();
-			imageUrl = data.urls.regular;
-			guessedNameInput?.focus();
-		} catch (error) {
-			console.error('Error fetching image:', error);
-			imageUrl = '/default-animal.jpg';
-		}
-	});
+    function startGame() {
+        if (!playerName.trim()) {
+            alert('Bitte gib deinen Namen ein!');
+            return;
+        }
+        showGame = true;
+    }
 
-	function revealTile(index: number): void {
-		if (!revealedTiles[index]) {
-			revealedTiles[index] = true;
-			counter += 1;
-		}
-	}
+    function calculateScore() {
+        const tilePenalty = counter * 5;
+        return Math.max(0, points - tilePenalty);
+    }
 
-	function checkGuess(e: Event) {
-		e.preventDefault();
-		if (!guessedName.trim()) return;
+    function startCountdown() {
+        showCountdown = true;
+        const timer = setInterval(() => {
+            countdown--;
+            if (countdown === 0) {
+                clearInterval(timer);
+                resetGame();
+            }
+        }, 1000);
+    }
 
-		const guess = guessedName.toLowerCase().trim();
-		const currentAnimal = animalList.find((a) => a.name === animal);
+    function resetGame() {
+        showCountdown = false;
+        countdown = 4;
+        isCorrect = false;
+        revealedTiles = Array(rows * cols).fill(false);
+        counter = 0;
+        points = 100;
+        guessedName = '';
+    }
 
-		// Check if guess matches any synonym or the main name
-		const isCorrectGuess =
-			currentAnimal?.synonyms.includes(guess) ||
-			guess === animal.toLowerCase() ||
-			guess === currentAnimal?.name.toLowerCase();
+    onMount(async () => {
+        hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-		if (isCorrectGuess) {
-			isCorrect = true;
-			triggerConfetti();
-		} else {
-			alert('Leider falsch. Versuche es nochmal!');
-			guessedName = '';
-			guessedNameInput?.focus();
-		}
-	}
+            const response = await fetch(
+                `https://api.unsplash.com/photos/random?query=${encodeURIComponent(animal)}%20animal%20portrait&orientation=landscape&content_filter=high&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
+                { signal: controller.signal }
+            );
 
-	function triggerConfetti() {
-		confetti({
-			spread: 100,
-			startVelocity: 30,
-			particleCount: 150,
-			zIndex: 2147483646,
-			origin: { x: 0.5, y: 0.5 }
-		});
-	}
+            clearTimeout(timeoutId);
+            const data = await response.json();
+            imageUrl = data.urls.regular;
+            guessedNameInput?.focus();
+        } catch (error) {
+            console.error('Error fetching image:', error);
+            imageUrl = `/animals/${animal.toLowerCase().replace(' ', '-')}.jpg`;
+        }
+    });
+
+    function revealTile(index: number): void {
+        if (!revealedTiles[index]) {
+            revealedTiles[index] = true;
+            counter += 1;
+        }
+    }
+
+    function checkGuess(e: Event) {
+        e.preventDefault();
+        if (!guessedName.trim()) return;
+
+        const guess = guessedName.toLowerCase().trim();
+        const currentAnimal = animalList.find((a) => a.name === animal);
+
+        const isCorrectGuess =
+            currentAnimal?.synonyms.includes(guess) ||
+            guess === animal.toLowerCase() ||
+            guess === currentAnimal?.name.toLowerCase();
+
+        if (isCorrectGuess) {
+            isCorrect = true;
+            const finalScore = calculateScore();
+            saveHighscore(finalScore);
+            triggerConfetti();
+            setTimeout(() => {
+                startCountdown();
+            }, 2000);
+        } else {
+            alert('Leider falsch. Versuche es nochmal!');
+            guessedName = '';
+            guessedNameInput?.focus();
+        }
+    }
+
+    function saveHighscore(score: number) {
+        if (highscoreStore) {
+            highscoreStore.update((scores) => [
+                ...scores,
+                { 
+                    name: playerName, 
+                    mode: 'Puzzle', 
+                    animal: animal,
+                    tiles: counter,
+                    score: score,
+                    date: new Date().toISOString()
+                }
+            ]);
+        }
+    }
+
+    function triggerConfetti() {
+        confetti({
+            spread: 100,
+            startVelocity: 30,
+            particleCount: 150,
+            zIndex: 2147483646,
+            origin: { x: 0.5, y: 0.5 }
+        });
+    }
 </script>
 
 <div class="puzzle-mode">
-	<h1>Tier-Ratespiel</h1>
+    <h1>Tier-Ratespiel</h1>
+    
+    <p class="hint">Finde das Nationaltier von {country}!</p>
 
-	<!-- Debug Information -->
-	<p class="debug-info">{debugAnimalName}</p>
+    {#if !showGame}
+        <div class="name-input-container">
+            <p class="name-intro">
+                Hallo kleiner Tierforscher! 🐾<br>
+                Bevor wir auf Safari gehen, verrate mir doch deinen Namen.
+            </p>
+            
+            <div class="input-group">
+                <div class="input-with-button">
+                    <input
+                        type="text"
+                        bind:value={playerName}
+                        placeholder="Dein Name oder Tiername..."
+                    />
+                    <button class="name-generator" on:click={generateRandomName}>
+                        Zufälliger Tiername 🎲
+                    </button>
+                    <button class="start-button" on:click={startGame}>
+                        Auf zur Safari! 🦁
+                    </button>
+                </div>
+            </div>
+        </div>
+    {:else}
+        <p class="player-welcome">Los geht's, {playerName}!</p>
+        <div class="score-display">Aktuelle Punktzahl: {points - (counter * 5)}</div>
 
-	{#if !isCorrect}
-		<div class="input-container">
-			<form on:submit={checkGuess}>
-				<label for="player-name">Dein Name:</label>
-				<input
-					id="player-name"
-					type="text"
-					bind:value={playerName}
-					placeholder="Name eingeben..."
-					required
-				/>
-				<label for="guessed-name">Welches Tier ist das?</label>
-				<input
-					id="guessed-name"
-					type="text"
-					bind:value={guessedName}
-					bind:this={guessedNameInput}
-					placeholder="Tiername eingeben..."
-					required
-				/>
-				<button type="submit">Prüfen</button>
-			</form>
-		</div>
-	{/if}
+        <div class="input-container">
+            <form on:submit={checkGuess}>
+                <label for="guessed-name">Welches Tier ist das?</label>
+                <input
+                    id="guessed-name"
+                    type="text"
+                    bind:value={guessedName}
+                    bind:this={guessedNameInput}
+                    placeholder="Tiername eingeben..."
+                    required
+                />
+                <button type="submit">Prüfen</button>
+            </form>
+        </div>
 
-	<div class="counter-box">
-		<p>Aufgedeckte Kacheln: {counter}/{rows * cols}</p>
-	</div>
+        <div class="counter-box">
+            <p>Aufgedeckte Kacheln: {counter}/{rows * cols}</p>
+        </div>
 
-	<div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
-		{#each revealedTiles as revealed, index}
-			<div class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)}></div>
-		{/each}
-	</div>
+        <div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
+            {#each revealedTiles as revealed, index}
+                <div class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)}></div>
+            {/each}
+        </div>
 
-	{#if isCorrect}
-		<p class="success">
-			Super gemacht {playerName}! Das Tier ist ein {animal} (der vollständige Name ist: {animal}),
-			das Nationaltier von {country}.
-		</p>
-	{/if}
+        {#if isCorrect}
+            <p class="success">
+                Super gemacht {playerName}! Das Tier ist ein {animal}, 
+                das Nationaltier von {country}. 
+                Deine Punktzahl: {calculateScore()}
+            </p>
+        {/if}
+
+        {#if showCountdown}
+            <div class="countdown-container">
+                <p class="countdown-text">Neues Spiel in</p>
+                <div class="countdown-number">{countdown}</div>
+                <p class="countdown-text">Sekunden</p>
+            </div>
+        {/if}
+    {/if}
 </div>
 
 <style>
-	.puzzle-mode {
-		background-color: rgba(255, 255, 255, 0.95);
-		border-radius: 15px;
-		border: 3px solid var(--jungle-primary);
-		box-shadow: 0 4px 15px var(--jungle-shadow);
-		padding: 20px;
-	}
+    .puzzle-mode {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        border: 3px solid var(--jungle-primary);
+        box-shadow: 0 4px 15px var(--jungle-shadow);
+        padding: 20px;
+    }
 
-	.input-container {
-		background-color: var(--jungle-light);
-		border-radius: 10px;
-		padding: 15px;
-	}
+    .name-input-container {
+        max-width: 500px;
+        margin: 30px auto;
+        padding: 20px;
+        background-color: var(--jungle-light);
+        border-radius: 10px;
+    }
 
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
+    .name-intro {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        color: var(--jungle-text);
+        margin-bottom: 20px;
+    }
 
-	input {
-		padding: 12px;
-		border: 2px solid var(--jungle-primary);
-		border-radius: 8px;
-		font-size: 1.1rem;
-		background-color: rgba(255, 255, 255, 0.9);
-	}
+    .input-with-button {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 
-	input:focus {
-		border-color: var(--jungle-accent);
-		outline: none;
-		box-shadow: 0 0 5px var(--jungle-shadow);
-	}
+    .name-generator {
+        padding: 12px 24px;
+        background-color: var(--jungle-secondary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
 
-	.grid {
-		position: relative;
-		display: grid;
-		grid-template-columns: repeat(var(--cols), 1fr);
-		width: min(90vw, 400px);
-		height: min(90vw, 400px);
-		margin: 20px auto;
-		background-size: cover;
-		background-position: center;
-		border: 3px solid var(--jungle-primary);
-		border-radius: 10px;
-		overflow: hidden;
-	}
+    .start-button {
+        padding: 12px 24px;
+        background-color: var(--jungle-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-	.tile {
-		background: rgba(0, 0, 0, 0.85);
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
+    .grid {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        width: min(90vw, 400px);
+        height: min(90vw, 400px);
+        margin: 20px auto;
+        background-size: cover;
+        background-position: center;
+        border: 3px solid var(--jungle-primary);
+        border-radius: 10px;
+        overflow: hidden;
+    }
 
-	.tile:hover {
-		background: rgba(0, 0, 0, 0.7);
-		transform: scale(0.98);
-	}
+    .tile {
+        background: rgba(0, 0, 0, 0.85);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-	.tile.revealed {
-		background: transparent;
-		pointer-events: none;
-	}
+    .tile.revealed {
+        background: transparent;
+        pointer-events: none;
+    }
 
-	.success {
-		background-color: var(--jungle-secondary);
-		color: white;
-		padding: 15px;
-		border-radius: 8px;
-		margin: 10px 0;
-	}
+    .input-container {
+        background-color: var(--jungle-light);
+        border-radius: 10px;
+        padding: 15px;
+    }
 
-	button {
-		padding: 12px;
-		background-color: var(--jungle-primary);
-		color: white;
-		border: none;
-		border-radius: 8px;
-		cursor: pointer;
-		font-size: 1.1rem;
-		transition: all 0.3s ease;
-	}
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
 
-	button:hover {
-		background-color: var(--jungle-dark);
-		transform: translateY(-2px);
-	}
+    input {
+        padding: 12px;
+        border: 2px solid var(--jungle-primary);
+        border-radius: 8px;
+        font-size: 1.1rem;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
 
-	button:active {
-		transform: translateY(0);
-	}
+    input:focus {
+        border-color: var(--jungle-accent);
+        outline: none;
+        box-shadow: 0 0 5px var(--jungle-shadow);
+    }
 
-	.debug-info {
-		color: red;
-		font-style: italic;
-		font-size: small;
-		margin-bottom: 10px;
-	}
+    .score-display {
+        font-size: 1.2rem;
+        color: var(--jungle-primary);
+        margin: 10px 0;
+        font-weight: bold;
+    }
 
-	.country-info {
-		background-color: var(--jungle-light);
-		padding: 12px;
-		border-radius: 8px;
-		margin-bottom: 20px;
-		text-align: center;
-		border: 2px solid var(--jungle-primary);
-	}
+    .countdown-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 2rem;
+        border-radius: 15px;
+        color: white;
+        z-index: 2147483647;
+        animation: fadeIn 0.5s ease;
+    }
 
-	.country-info p {
-		margin: 0;
-		font-size: 1.2rem;
-		color: var(--jungle-text);
-	}
+    .countdown-number {
+        font-size: 4rem;
+        font-weight: bold;
+        color: var(--jungle-primary);
+        margin: 1rem 0;
+        animation: pulse 1s infinite;
+    }
+
+    .countdown-text {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
 </style>
