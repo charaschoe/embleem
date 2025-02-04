@@ -17,6 +17,9 @@
 	let isCorrect = false;
 	let revealed = Array(9).fill(false);
 	let counter = 0;
+	let countdown = 4;
+	let showCountdown = false;
+	let points = 100;
 
 	const placeholderNames = [
 		// Niedliche Tiernamen
@@ -77,12 +80,14 @@
 		'Sonnenschein'
 	];
 
-	function getRandomPlaceholder() {
-		return placeholderNames[Math.floor(Math.random() * placeholderNames.length)];
+	function generateRandomName() {
+		playerName = placeholderNames[Math.floor(Math.random() * placeholderNames.length)];
 	}
 
-	function generateRandomName() {
-		playerName = getRandomPlaceholder();
+	function calculateScore() {
+		const attemptPenalty = clickedAnimals.size * 10;
+		const tilePenalty = counter * 5;
+		return Math.max(0, points - attemptPenalty - tilePenalty);
 	}
 
 	function startGame() {
@@ -92,6 +97,28 @@
 		}
 		randomizedAnimalList = fullAnimalList.map((a) => a.name).sort(() => Math.random() - 0.5);
 		showGame = true;
+	}
+	function startCountdown() {
+		showCountdown = true;
+		const timer = setInterval(() => {
+			countdown--;
+			if (countdown === 0) {
+				clearInterval(timer);
+				resetGame();
+			}
+		}, 1000);
+	}
+
+	function resetGame() {
+		showCountdown = false;
+		countdown = 4;
+		isCorrect = false;
+		clickedAnimals.clear();
+		revealed = Array(9).fill(false);
+		counter = 0;
+		points = 100;
+		feedback = '';
+		randomizedAnimalList = fullAnimalList.map((a) => a.name).sort(() => Math.random() - 0.5);
 	}
 
 	function revealTile(index: number): void {
@@ -109,15 +136,19 @@
 
 		if (animal === correctAnimal) {
 			isCorrect = true;
-			feedback = `Super gemacht ${playerName}! Du hast das richtige Tier gefunden!`;
-			saveHighscore();
+			const finalScore = calculateScore();
+			feedback = `Super gemacht ${playerName}! Du hast das richtige Tier gefunden! Deine Punktzahl: ${finalScore}`;
+			saveHighscore(finalScore);
 			triggerConfetti();
+			setTimeout(() => {
+				startCountdown();
+			}, 2000);
 		} else {
-			feedback = `Nicht ganz richtig, ${playerName}. Versuche es nochmal!`;
+			feedback = `Nicht ganz richtig, ${playerName}. Versuche es nochmal! (-10 Punkte)`;
 		}
 	}
 
-	function saveHighscore() {
+	function saveHighscore(score: number) {
 		if (highscoreStore) {
 			highscoreStore.update((scores) => [
 				...scores,
@@ -126,6 +157,8 @@
 					mode: 'Wordle',
 					animal: correctAnimal,
 					attempts: clickedAnimals.size,
+					tiles: counter,
+					score: score,
 					date: new Date().toISOString()
 				}
 			]);
@@ -187,6 +220,9 @@
 	{:else}
 		<div class="game-container">
 			<p class="player-welcome">Los geht's, {playerName}!</p>
+			<div class="score-display">
+				Aktuelle Punktzahl: {points - clickedAnimals.size * 10 - counter * 5}
+			</div>
 
 			<div class="grid" style="--cols: 3; background-image: url('{imageUrl}');">
 				{#each Array(9) as _, index}
@@ -217,6 +253,14 @@
 						<span class="attempts">Du hast {clickedAnimals.size} Versuche gebraucht.</span>
 					{/if}
 				</p>
+			{/if}
+
+			{#if showCountdown}
+				<div class="countdown-container">
+					<p class="countdown-text">Neues Spiel in</p>
+					<div class="countdown-number">{countdown}</div>
+					<p class="countdown-text">Sekunden</p>
+				</div>
 			{/if}
 		</div>
 	{/if}
@@ -358,5 +402,59 @@
 		font-size: 1.2rem;
 		margin: 20px 0;
 		color: var(--jungle-text);
+	}
+
+	.score-display {
+		font-size: 1.2rem;
+		color: var(--jungle-primary);
+		margin: 10px 0;
+		font-weight: bold;
+	}
+
+	.countdown-container {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background: rgba(0, 0, 0, 0.9);
+		padding: 2rem;
+		border-radius: 15px;
+		color: white;
+		z-index: 2147483647;
+		animation: fadeIn 0.5s ease;
+	}
+
+	.countdown-number {
+		font-size: 4rem;
+		font-weight: bold;
+		color: var(--jungle-primary);
+		margin: 1rem 0;
+		animation: pulse 1s infinite;
+	}
+
+	.countdown-text {
+		font-size: 1.2rem;
+		margin: 0;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes pulse {
+		0% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.1);
+		}
+		100% {
+			transform: scale(1);
+		}
 	}
 </style>
