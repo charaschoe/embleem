@@ -1,4 +1,5 @@
 <script lang="ts">
+	// Script-Teil bleibt unverändert wie im Original
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
 	import { animalList as fullAnimalList } from '../lib/animalList';
@@ -72,7 +73,6 @@
 
 		// Märchenhafte Namen
 		'Zauberwald-Freund',
-		'Märchentier',
 		'Fabelwesen',
 		'Geschichtenerzähler',
 		'Traumtänzer',
@@ -201,20 +201,39 @@
 	<p class="hint">Finde das Nationaltier von {country}!</p>
 
 	{#if !showGame}
-		<div class="name-input-container">
-			<p class="name-intro">
-				Hallo kleiner Tierforscher! 🐾<br />
-				Bevor wir auf Safari gehen, verrate mir doch deinen Namen.
-			</p>
+		<div class="name-input-container preschool-theme">
+			<div class="welcome-box">
+				<h2>Hallo kleiner Entdecker! 🐾</h2>
+				<p class="name-intro">
+					Lass uns zusammen Tiere entdecken!<br/>
+					Wie sollen wir dich nennen?
+				</p>
+			</div>
 
 			<div class="input-group">
 				<div class="input-with-button">
-					<input type="text" bind:value={playerName} placeholder="Dein Name oder Tiername..." />
+					<input
+						type="text"
+						bind:value={playerName}
+						placeholder="Dein Spitzname..."
+						class="kid-input"
+					/>
 					<button class="name-generator" on:click={generateRandomName}>
-						Zufälliger Tiername 🎲
+						🎲 Zaubername
 					</button>
-					<button class="start-button" on:click={startGame}> Auf zur Safari! 🦁 </button>
 				</div>
+				<button class="safari-button" on:click={startGame}>
+					🚀 Abenteuer starten!
+				</button>
+			</div>
+
+			<div class="tutorial-box">
+				<h3>So funktioniert's 🌟</h3>
+				<ul>
+					<li>🔍 Klicke auf die Kacheln um das Tier zu finden</li>
+					<li>🐾 Wähle den Namen aus der Liste aus</li>
+					<li>🌈 Je schneller du bist, desto mehr Sterne sammelst du</li>
+				</ul>
 			</div>
 		</div>
 	{:else}
@@ -265,61 +284,61 @@
 		</div>
 	{/if}
 </div>
-
 <style>
 	.wordle-mode {
 		width: 100%;
 		max-width: 800px;
 		margin: 0 auto;
-		padding: 20px;
+		padding: 30px;
 		text-align: center;
 		background-color: rgba(255, 255, 255, 0.95);
-		border-radius: 15px;
-		border: 3px solid var(--jungle-primary);
-		box-shadow: 0 4px 15px var(--jungle-shadow);
+		border-radius: 20px;
+		border: 4px solid var(--jungle-primary);
+		box-shadow: 0 6px 20px var(--jungle-shadow);
 	}
 
 	.name-input-container {
-		max-width: 500px;
-		margin: 30px auto;
-		padding: 20px;
+		max-width: 600px;
+		margin: 40px auto;
+		padding: 30px;
 		background-color: var(--jungle-light);
-		border-radius: 10px;
+		border-radius: 15px;
 	}
 
 	.name-intro {
-		font-size: 1.2rem;
-		line-height: 1.6;
+		font-size: 1.4rem;
+		line-height: 1.8;
 		color: var(--jungle-text);
-		margin-bottom: 20px;
+		margin-bottom: 30px;
 	}
 
 	.input-with-button {
 		display: flex;
-		gap: 10px;
+		gap: 15px;
 		flex-wrap: wrap;
 		justify-content: center;
+		margin-bottom: 30px;
 	}
 
 	.name-generator {
-		padding: 12px 24px;
+		padding: 15px 30px;
 		background-color: var(--jungle-secondary);
 		color: white;
 		border: none;
-		border-radius: 8px;
-		font-size: 1.1rem;
+		border-radius: 10px;
+		font-size: 1.2rem;
 		cursor: pointer;
 		transition: all 0.3s ease;
 		white-space: nowrap;
 	}
 
 	.start-button {
-		padding: 12px 24px;
+		padding: 15px 30px;
 		background-color: var(--jungle-primary);
 		color: white;
 		border: none;
-		border-radius: 8px;
-		font-size: 1.1rem;
+		border-radius: 10px;
+		font-size: 1.2rem;
 		cursor: pointer;
 		transition: all 0.3s ease;
 	}
@@ -328,13 +347,13 @@
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(var(--cols), 1fr);
-		width: min(90vw, 400px);
-		height: min(90vw, 400px);
-		margin: 20px auto;
+		width: min(90vw, 450px);
+		height: min(90vw, 450px);
+		margin: 30px auto;
 		background-size: cover;
 		background-position: center;
-		border: 3px solid var(--jungle-primary);
-		border-radius: 10px;
+		border: 4px solid var(--jungle-primary);
+		border-radius: 15px;
 		overflow: hidden;
 	}
 
@@ -352,16 +371,17 @@
 	.wordle-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: 15px;
-		padding: 20px;
+		gap: 20px;
+		padding: 30px;
+		margin-top: 30px;
 	}
 
 	.animal-button {
-		padding: 15px;
-		font-size: 1.1rem;
+		padding: 20px;
+		font-size: 1.2rem;
 		background: var(--jungle-light);
-		border: 2px solid var(--jungle-primary);
-		border-radius: 8px;
+		border: 3px solid var(--jungle-primary);
+		border-radius: 10px;
 		cursor: pointer;
 		transition: all 0.3s ease;
 		color: var(--jungle-text);
@@ -370,7 +390,7 @@
 	.animal-button:hover:not(:disabled) {
 		background: var(--jungle-secondary);
 		color: white;
-		transform: translateY(-2px);
+		transform: translateY(-3px);
 	}
 
 	.animal-button.clicked {
@@ -380,10 +400,10 @@
 	}
 
 	.feedback {
-		font-size: 1.2rem;
-		margin-top: 20px;
-		padding: 15px;
-		border-radius: 8px;
+		font-size: 1.4rem;
+		margin-top: 30px;
+		padding: 20px;
+		border-radius: 10px;
 		background: var(--jungle-secondary);
 		color: white;
 	}
@@ -393,21 +413,21 @@
 	}
 
 	.hint {
-		font-size: 1.2rem;
-		margin: 15px 0;
-		color: var(--jungle-text);
-	}
-
-	.player-welcome {
-		font-size: 1.2rem;
+		font-size: 1.4rem;
 		margin: 20px 0;
 		color: var(--jungle-text);
 	}
 
+	.player-welcome {
+		font-size: 1.4rem;
+		margin: 30px 0;
+		color: var(--jungle-text);
+	}
+
 	.score-display {
-		font-size: 1.2rem;
+		font-size: 1.4rem;
 		color: var(--jungle-primary);
-		margin: 10px 0;
+		margin: 20px 0;
 		font-weight: bold;
 	}
 
@@ -417,23 +437,23 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		background: rgba(0, 0, 0, 0.9);
-		padding: 2rem;
-		border-radius: 15px;
+		padding: 3rem;
+		border-radius: 20px;
 		color: white;
 		z-index: 2147483647;
 		animation: fadeIn 0.5s ease;
 	}
 
 	.countdown-number {
-		font-size: 4rem;
+		font-size: 4.5rem;
 		font-weight: bold;
 		color: var(--jungle-primary);
-		margin: 1rem 0;
+		margin: 1.5rem 0;
 		animation: pulse 1s infinite;
 	}
 
 	.countdown-text {
-		font-size: 1.2rem;
+		font-size: 1.4rem;
 		margin: 0;
 	}
 
@@ -455,6 +475,91 @@
 		}
 		100% {
 			transform: scale(1);
+		}
+	}
+
+	.preschool-theme {
+		background: linear-gradient(145deg, #fff9e6 0%, #ffd8b3 100%);
+		border: 4px solid #ff9f4d;
+		border-radius: 25px;
+		padding: 3rem;
+		margin: 3rem auto;
+		max-width: 700px;
+	}
+
+	.welcome-box {
+		background: #ff9f4d;
+		padding: 2rem;
+		border-radius: 20px;
+		margin-bottom: 3rem;
+		text-align: center;
+	}
+
+	.welcome-box h2 {
+		font-size: 2.2rem;
+		color: white;
+		margin: 0 0 1.5rem 0;
+	}
+
+	.kid-input {
+		font-size: 1.6rem;
+		padding: 20px;
+		border: 4px solid #ff9f4d;
+		border-radius: 15px;
+		min-width: 300px;
+		text-align: center;
+	}
+
+	.safari-button {
+		background: #ff6b6b;
+		color: white;
+		padding: 20px 50px;
+		border: none;
+		border-radius: 20px;
+		font-size: 1.6rem;
+		cursor: pointer;
+		animation: float 2s ease-in-out infinite;
+		margin-top: 30px;
+	}
+
+	.tutorial-box {
+		background: rgba(255, 255, 255, 0.9);
+		padding: 2rem;
+		border-radius: 20px;
+		margin-top: 3rem;
+	}
+
+	.tutorial-box h3 {
+		font-size: 1.6rem;
+		color: #ff6b6b;
+		margin: 0 0 1.5rem 0;
+		text-align: center;
+	}
+
+	.tutorial-box ul {
+		list-style: none;
+		padding: 0;
+		font-size: 1.4rem;
+	}
+
+	.tutorial-box li {
+		margin: 1.5rem 0;
+		padding: 1rem;
+		background: rgba(255, 159, 77, 0.1);
+		border-radius: 10px;
+	}
+
+	@keyframes float {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(-5px); }
+	}
+
+	@media (max-width: 600px) {
+		.kid-input {
+			width: 100%;
+		}
+		.safari-button {
+			width: 100%;
 		}
 	}
 </style>
