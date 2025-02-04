@@ -33,3 +33,19 @@ export async function getCountryFlag(countryCode) {
 		return '/default-flag.png';
 	}
 }
+
+export async function getUnsplashImage(animal) {
+	try {
+		const response = await fetch(
+			`https://api.unsplash.com/photos/random?query=${encodeURIComponent(animal)}&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
+			{
+				signal: AbortSignal.timeout(5000)
+			}
+		);
+		const data = await response.json();
+		return data.urls.regular;
+	} catch (error) {
+		console.error('Error fetching Unsplash image:', error);
+		return `/animals/${animal.toLowerCase()}.jpg`;
+	}
+}

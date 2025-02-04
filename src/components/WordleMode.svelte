@@ -1,46 +1,66 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
-	import { getCountryFlag } from '$lib/unsplash';
+	import { getUnsplashImage } from '$lib/unsplash';
 
 	export let animalList = [];
 	export let correctAnimal = '';
 	export let highscoreStore;
 	export let country = '';
 
-	let selectedAnimal = '';
-	let feedback = '';
-	let randomizedAnimalList = [];
-	let clickedAnimals = new Set();
+	let imageUrl = '';
+	let revealed = Array(9).fill(false);
+	let guessedName = '';
 	let playerName = '';
-	let countryFlag = '';
-
-	function randomizeAnimalList(list) {
-		return [...list].sort(() => Math.random() - 0.5);
-	}
+	let isCorrect = false;
+	let counter = 0;
 
 	onMount(async () => {
-		randomizedAnimalList = randomizeAnimalList(animalList);
-		// Get country flag
-		if (country) {
-			const countryCode = getCountryCode(country);
-			countryFlag = await getCountryFlag(countryCode);
+		try {
+			imageUrl = await getUnsplashImage(correctAnimal);
+		} catch (error) {
+			imageUrl = `/animals/${correctAnimal.toLowerCase()}.jpg`;
 		}
 	});
 
-	function checkSelection(animal) {
-		if (clickedAnimals.has(animal)) return;
+	function revealTile(index: number): void {
+		if (!revealed[index]) {
+			revealed[index] = true;
+			counter++;
+		}
+	}
 
-		clickedAnimals.add(animal);
-		selectedAnimal = animal;
+	function checkGuess(e: Event) {
+		e.preventDefault();
+		if (!guessedName.trim()) return;
 
-		if (animal === correctAnimal) {
-			feedback = 'Richtig! Du hast das Tier erraten.';
-			triggerConfetti();
+		if (guessedName.toLowerCase().trim() === correctAnimal.toLowerCase()) {
+			isCorrect = true;
 			saveHighscore();
-			randomizedAnimalList = [];
+			triggerConfetti();
 		} else {
-			feedback = 'Leider falsch. Versuche es erneut!';
+			alert('Leider falsch. Versuche es nochmal!');
+			guessedName = '';
+		}
+	}
+
+	function saveHighscore() {
+		if (!playerName.trim()) {
+			alert('Bitte gib deinen Namen ein!');
+			return;
+		}
+
+		if (highscoreStore) {
+			highscoreStore.update((scores) => [
+				...scores,
+				{
+					name: playerName,
+					mode: 'Puzzle',
+					animal: correctAnimal,
+					tiles: counter,
+					date: new Date().toISOString()
+				}
+			]);
 		}
 	}
 
@@ -49,69 +69,64 @@
 			spread: 100,
 			startVelocity: 30,
 			particleCount: 150,
-			zIndex: 2147483645,
+			zIndex: 2147483646,
 			origin: { x: 0.5, y: 0.5 }
 		});
 	}
-
-	function saveHighscore() {
-		if (playerName.trim() === '') {
-			alert('Bitte gib deinen Namen ein!');
-			return;
-		}
-
-		if (highscoreStore) {
-			highscoreStore.update((scores) => [
-				...scores,
-				{ name: playerName, mode: 'Wordle', correctAnimal }
-			]);
-			alert('Highscore gespeichert!');
-		}
-	}
 </script>
 
-<div class="wordle-mode">
+<div class="puzzle-mode">
 	<h1>Tier-Ratespiel</h1>
 
-	<div class="country-info">
-		{#if countryFlag}
-			<img src={countryFlag} alt="Flagge von {country}" class="country-flag" />
-		{/if}
-		<p>Finde das Nationaltier von {country}!</p>
-	</div>
+	<p class="hint">Finde das Nationaltier von {country}!</p>
 
-	<div class="input-container">
-		<label for="player-name">Dein Name:</label>
-		<input
-			id="player-name"
-			type="text"
-			bind:value={playerName}
-			placeholder="Name eingeben..."
-			required
-		/>
-	</div>
+	<div class="game-container">
+		<div class="input-section">
+			<form on:submit={checkGuess}>
+				<div class="input-group">
+					<label for="player-name">Dein Name:</label>
+					<input
+						id="player-name"
+						type="text"
+						bind:value={playerName}
+						placeholder="Name eingeben..."
+						required
+					/>
+				</div>
+				<div class="input-group">
+					<label for="animal-guess">Welches Tier ist das?</label>
+					<input
+						id="animal-guess"
+						type="text"
+						bind:value={guessedName}
+						placeholder="Tiername eingeben..."
+						required
+					/>
+				</div>
+				<button type="submit">Prüfen</button>
+			</form>
+		</div>
 
-	{#if randomizedAnimalList.length > 0}
-		<div class="wordle-grid">
-			{#each randomizedAnimalList as animal}
-				<button
-					class="animal-button {clickedAnimals.has(animal) ? 'clicked' : ''}"
-					on:click={() => checkSelection(animal)}
-				>
-					{animal}
-				</button>
+		<div class="grid" style="--cols: 3; background-image: url('{imageUrl}');">
+			{#each Array(9) as _, index}
+				<div class="tile {revealed[index] ? 'revealed' : ''}" on:click={() => revealTile(index)} />
 			{/each}
 		</div>
-	{/if}
 
-	{#if feedback}
-		<p class="feedback">{feedback}</p>
+		<div class="counter-box">
+			<p>Aufgedeckte Kacheln: {counter}/9</p>
+		</div>
+	</div>
+
+	{#if isCorrect}
+		<p class="success">
+			Super gemacht {playerName}! Das Tier ist ein {correctAnimal}, das Nationaltier von {country}.
+		</p>
 	{/if}
 </div>
 
 <style>
-	.wordle-mode {
-		position: relative;
+	.puzzle-mode {
 		width: 100%;
 		max-width: 800px;
 		margin: 0 auto;
@@ -123,73 +138,95 @@
 		box-shadow: 0 4px 15px var(--jungle-shadow);
 	}
 
-	.country-info {
+	.game-container {
 		display: flex;
+		flex-direction: column;
+		gap: 20px;
 		align-items: center;
-		justify-content: center;
-		gap: 10px;
-		margin-bottom: 20px;
-		padding: 10px;
-		background-color: var(--jungle-light);
-		border-radius: 8px;
 	}
 
-	.country-flag {
-		width: 32px;
-		height: auto;
-		border: 1px solid var(--jungle-shadow);
-		border-radius: 4px;
-	}
-
-	.input-container {
-		margin-bottom: 20px;
-	}
-
-	input {
-		padding: 12px;
+	.input-section {
 		width: 100%;
-		max-width: 300px;
-		border: 2px solid var(--jungle-primary);
-		border-radius: 8px;
-		font-size: 1.1rem;
+		max-width: 400px;
+		margin: 20px 0;
 	}
 
-	.wordle-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: 15px;
-		padding: 20px;
+	.input-group {
+		margin-bottom: 15px;
+		text-align: left;
 	}
 
-	.animal-button {
-		padding: 15px;
-		font-size: 1.1rem;
-		background: var(--jungle-light);
-		border: 2px solid var(--jungle-primary);
-		border-radius: 8px;
-		cursor: pointer;
-		transition: all 0.3s ease;
+	.input-group label {
+		display: block;
+		margin-bottom: 5px;
 		color: var(--jungle-text);
 	}
 
-	.animal-button:hover {
-		background: var(--jungle-secondary);
-		color: white;
-		transform: translateY(-2px);
+	input {
+		width: 100%;
+		padding: 12px;
+		border: 2px solid var(--jungle-primary);
+		border-radius: 8px;
+		font-size: 1.1rem;
 	}
 
-	.animal-button.clicked {
-		background: var(--jungle-dark);
+	button {
+		width: 100%;
+		padding: 12px;
+		background-color: var(--jungle-primary);
 		color: white;
-		cursor: not-allowed;
+		border: none;
+		border-radius: 8px;
+		font-size: 1.1rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
 	}
 
-	.feedback {
-		font-size: 1.2rem;
+	button:hover {
+		background-color: var(--jungle-dark);
+	}
+
+	.grid {
+		position: relative;
+		display: grid;
+		grid-template-columns: repeat(var(--cols), 1fr);
+		width: min(90vw, 400px);
+		height: min(90vw, 400px);
+		background-size: cover;
+		background-position: center;
+		border: 3px solid var(--jungle-primary);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	.tile {
+		background: rgba(0, 0, 0, 0.85);
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.tile.revealed {
+		background: transparent;
+		pointer-events: none;
+	}
+
+	.counter-box {
+		margin-top: 10px;
+		font-size: 1.1rem;
+		color: var(--jungle-text);
+	}
+
+	.success {
 		margin-top: 20px;
 		padding: 15px;
-		border-radius: 8px;
-		background: var(--jungle-secondary);
+		background-color: var(--jungle-secondary);
 		color: white;
+		border-radius: 8px;
+	}
+
+	.hint {
+		font-size: 1.2rem;
+		margin: 15px 0;
+		color: var(--jungle-text);
 	}
 </style>
