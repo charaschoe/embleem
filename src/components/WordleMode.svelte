@@ -1,3 +1,4 @@
+<!-- PuzzleGrid.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
@@ -14,6 +15,36 @@
 	let playerName = '';
 	let isCorrect = false;
 	let counter = 0;
+	let showGame = false;
+
+	const placeholderNames = [
+		'Kleiner Panda',
+		'Süße Giraffe',
+		'Fröhlicher Pinguin',
+		'Niedlicher Koala',
+		'Bunter Papagei',
+		'Sanfter Delfin',
+		'Lustiger Otter',
+		'Schlauer Fuchs',
+		'Munteres Känguru',
+		'Treuer Elefant'
+	];
+
+	function getRandomPlaceholder() {
+		return placeholderNames[Math.floor(Math.random() * placeholderNames.length)];
+	}
+
+	function generateRandomName() {
+		playerName = getRandomPlaceholder();
+	}
+
+	function startGame() {
+		if (!playerName.trim()) {
+			alert('Bitte gib deinen Namen ein!');
+			return;
+		}
+		showGame = true;
+	}
 
 	onMount(async () => {
 		try {
@@ -39,17 +70,12 @@
 			saveHighscore();
 			triggerConfetti();
 		} else {
-			alert('Leider falsch. Versuche es nochmal!');
+			alert(`Nicht ganz richtig, ${playerName}. Versuche es nochmal!`);
 			guessedName = '';
 		}
 	}
 
 	function saveHighscore() {
-		if (!playerName.trim()) {
-			alert('Bitte gib deinen Namen ein!');
-			return;
-		}
-
 		if (highscoreStore) {
 			highscoreStore.update((scores) => [
 				...scores,
@@ -80,19 +106,28 @@
 
 	<p class="hint">Finde das Nationaltier von {country}!</p>
 
-	<div class="game-container">
-		<div class="input-section">
-			<form on:submit={checkGuess}>
-				<div class="input-group">
-					<label for="player-name">Dein Name:</label>
-					<input
-						id="player-name"
-						type="text"
-						bind:value={playerName}
-						placeholder="Name eingeben..."
-						required
-					/>
+	{#if !showGame}
+		<div class="name-input-container">
+			<p class="name-intro">
+				Hallo kleiner Tierforscher! 🐾<br />
+				Bevor wir auf Safari gehen, verrate mir doch deinen Namen.
+			</p>
+
+			<div class="input-group">
+				<div class="input-with-button">
+					<input type="text" bind:value={playerName} placeholder="Dein Name oder Tiername..." />
+					<button class="name-generator" on:click={generateRandomName}>
+						Zufälliger Tiername 🎲
+					</button>
+					<button class="start-button" on:click={startGame}> Auf zur Safari! 🦁 </button>
 				</div>
+			</div>
+		</div>
+	{:else}
+		<div class="game-container">
+			<p class="player-welcome">Los geht's, {playerName}!</p>
+
+			<form on:submit={checkGuess}>
 				<div class="input-group">
 					<label for="animal-guess">Welches Tier ist das?</label>
 					<input
@@ -102,26 +137,29 @@
 						placeholder="Tiername eingeben..."
 						required
 					/>
+					<button type="submit">Prüfen</button>
 				</div>
-				<button type="submit">Prüfen</button>
 			</form>
-		</div>
 
-		<div class="grid" style="--cols: 3; background-image: url('{imageUrl}');">
-			{#each Array(9) as _, index}
-				<div class="tile {revealed[index] ? 'revealed' : ''}" on:click={() => revealTile(index)} />
-			{/each}
-		</div>
+			<div class="grid" style="--cols: 3; background-image: url('{imageUrl}');">
+				{#each Array(9) as _, index}
+					<div
+						class="tile {revealed[index] ? 'revealed' : ''}"
+						on:click={() => revealTile(index)}
+					/>
+				{/each}
+			</div>
 
-		<div class="counter-box">
-			<p>Aufgedeckte Kacheln: {counter}/9</p>
-		</div>
-	</div>
+			<div class="counter-box">
+				<p>Aufgedeckte Kacheln: {counter}/9</p>
+			</div>
 
-	{#if isCorrect}
-		<p class="success">
-			Super gemacht {playerName}! Das Tier ist ein {correctAnimal}, das Nationaltier von {country}.
-		</p>
+			{#if isCorrect}
+				<p class="success">
+					Super gemacht {playerName}! Das Tier ist ein {correctAnimal}, das Nationaltier von {country}.
+				</p>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -138,41 +176,47 @@
 		box-shadow: 0 4px 15px var(--jungle-shadow);
 	}
 
-	.game-container {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-		align-items: center;
+	.name-input-container {
+		max-width: 500px;
+		margin: 30px auto;
+		padding: 20px;
+		background-color: var(--jungle-light);
+		border-radius: 10px;
 	}
 
-	.input-section {
-		width: 100%;
-		max-width: 400px;
-		margin: 20px 0;
-	}
-
-	.input-group {
-		margin-bottom: 15px;
-		text-align: left;
-	}
-
-	.input-group label {
-		display: block;
-		margin-bottom: 5px;
+	.name-intro {
+		font-size: 1.2rem;
+		line-height: 1.6;
 		color: var(--jungle-text);
+		margin-bottom: 20px;
 	}
 
-	input {
-		width: 100%;
-		padding: 12px;
-		border: 2px solid var(--jungle-primary);
+	.input-with-button {
+		display: flex;
+		gap: 10px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.name-generator {
+		padding: 12px 24px;
+		background-color: var(--jungle-secondary);
+		color: white;
+		border: none;
 		border-radius: 8px;
 		font-size: 1.1rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		white-space: nowrap;
 	}
 
-	button {
-		width: 100%;
-		padding: 12px;
+	.name-generator:hover {
+		background-color: var(--jungle-dark);
+		transform: translateY(-2px);
+	}
+
+	.start-button {
+		padding: 12px 24px;
 		background-color: var(--jungle-primary);
 		color: white;
 		border: none;
@@ -182,8 +226,27 @@
 		transition: all 0.3s ease;
 	}
 
-	button:hover {
+	.start-button:hover {
 		background-color: var(--jungle-dark);
+		transform: translateY(-2px);
+	}
+
+	.game-container {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		align-items: center;
+	}
+
+	.input-group {
+		margin-bottom: 15px;
+	}
+
+	input {
+		padding: 12px;
+		border: 2px solid var(--jungle-primary);
+		border-radius: 8px;
+		font-size: 1.1rem;
 	}
 
 	.grid {
@@ -192,6 +255,7 @@
 		grid-template-columns: repeat(var(--cols), 1fr);
 		width: min(90vw, 400px);
 		height: min(90vw, 400px);
+		margin: 20px auto;
 		background-size: cover;
 		background-position: center;
 		border: 3px solid var(--jungle-primary);
@@ -227,6 +291,12 @@
 	.hint {
 		font-size: 1.2rem;
 		margin: 15px 0;
+		color: var(--jungle-text);
+	}
+
+	.player-welcome {
+		font-size: 1.2rem;
+		margin: 20px 0;
 		color: var(--jungle-text);
 	}
 </style>
