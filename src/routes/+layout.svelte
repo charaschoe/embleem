@@ -1,6 +1,7 @@
 <script>
 	import './app.css';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 </script>
 
 <nav class="jungle-nav">
@@ -9,13 +10,17 @@
 			<span class="nav-icon">🌴</span>
 			Start
 		</a>
-		<a href="/game" class="nav-link">
+		<a href="/game/puzzle" class="nav-link" class:active={$page.url.pathname === '/game/puzzle'}>
 			<span class="nav-icon">🧩</span>
 			Puzzle Mode
 		</a>
-		<a href="/game?mode=wordle" class="nav-link">
+		<a href="/game/wordle" class="nav-link" class:active={$page.url.pathname === '/game/wordle'}>
 			<span class="nav-icon">🎯</span>
 			Wordle Mode
+		</a>
+		<a href="/highscores" class="nav-link" class:active={$page.url.pathname === '/highscores'}>
+			<span class="nav-icon">🏆</span>
+			Highscores
 		</a>
 	</div>
 </nav>
@@ -63,6 +68,11 @@
 
 	.nav-link:active {
 		transform: translateY(0);
+	}
+
+	.nav-link.active {
+		background-color: var(--jungle-dark);
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.nav-icon {
