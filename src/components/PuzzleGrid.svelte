@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import confetti from 'canvas-confetti';
+	import confetti from 'canvas-confetti'; // @ts-ignore
 	import { animalList } from '../lib/animalList';
+	import { getAnimalInfo } from '../lib/wikipedia';
 
-	export let highscoreStore;
+	export let highscoreStore: any;
 	export let animal: string;
 	export let imageUrl = '';
 	export let country = '';
@@ -20,6 +21,7 @@
 	let showCountdown = false;
 	let difficulty = 'medium';
 	let lastScore: number | null = null;
+	let wikiInfo = '';
 
 	// Schwierigkeitskonfiguration
 	let rows = 3;
@@ -100,7 +102,7 @@
 	function saveHighscore(score: number) {
 		if (highscoreStore) {
 			lastScore = score;
-			highscoreStore.update((scores) => [
+			highscoreStore.update((scores: any) => [
 				...scores,
 				{
 					name: playerName,
@@ -163,6 +165,10 @@
 		}
 	}
 
+	async function showAnimalInfo() { // Füge diese Funktion hinzu
+		wikiInfo = await getAnimalInfo(animal);
+	}
+
 	function checkGuess(e: Event) {
 		e.preventDefault();
 		if (!guessedName.trim()) return;
@@ -180,6 +186,7 @@
 			const finalScore = calculateScore();
 			saveHighscore(finalScore);
 			triggerConfetti();
+			showAnimalInfo(); // Hier die Wikipedia-Info aufrufen
 			setTimeout(() => {
 				startCountdown();
 			}, 2000);
@@ -295,15 +302,23 @@
 
 		<div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
 			{#each revealedTiles as revealed, index}
-				<div class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)}></div>
+				<button class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)} aria-label="Tile" role="button"></button>
 			{/each}
 		</div>
 
 		{#if isCorrect}
-			<p class="success">
-				Super gemacht {playerName}! Das Tier ist ein {animal}, das Nationaltier von {country}. Deine
-				Punktzahl: {calculateScore()}
-			</p>
+			<div class="success">
+				<p>Super gemacht {playerName}! Das Tier ist ein {animal}, das Nationaltier von {country}.</p>
+				<p>Punktzahl: {calculateScore()}</p>
+				{#if wikiInfo}
+					<div class="wiki-info">
+						<h4>Wissenswertes aus Wikipedia:</h4>
+						<p>{wikiInfo}</p>
+					</div>
+				{:else}
+					<div class="loading-info">Lade interessante Fakten...</div>
+				{/if}
+			</div>
 		{/if}
 
 		{#if showCountdown}
@@ -477,6 +492,31 @@
 		text-align: center;
 	}
 
+	.wiki-info {
+		background: rgba(255, 255, 255, 0.95);
+		border-radius: 8px;
+		padding: 1rem;
+		margin-top: 1rem;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	}
+
+	.wiki-info h4 {
+		color: var(--jungle-primary);
+		margin-bottom: 0.5rem;
+		font-size: 1.1rem;
+	}
+
+	.wiki-info p {
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+
+	.loading-info {
+		font-size: 0.8rem;
+		opacity: 0.7;
+		margin-top: 0.5rem;
+	}
+
 	@media (max-width: 600px) {
 		.input-with-button {
 			flex-direction: column;
@@ -484,6 +524,20 @@
 
 		.name-input {
 			max-width: 100%;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.wiki-info {
+			padding: 0.8rem;
+		}
+		
+		.wiki-info h4 {
+			font-size: 1rem;
+		}
+		
+		.wiki-info p {
+			font-size: 0.8rem;
 		}
 	}
 </style>
