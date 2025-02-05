@@ -7,7 +7,6 @@ Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "
 ## 📸 Erste Eindrücke
 
 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-    <img src="./static/screenshots/start%20breit.jpeg" alt="Breite Startansicht" width="49%" />
     <img src="./static/screenshots/start%20lang.jpeg" alt="Lange Startansicht" width="49%" />
 </div>
 
