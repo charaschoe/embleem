@@ -1,21 +1,14 @@
 # Tier-Ratespiel: Entdecke die Nationaltiere der Welt 🌍
 
+![Startseite](./static/screenshots/wordle%20start.jpeg)
+
 Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "Programmiersprachen 3" an der HfG Schwäbisch Gmünd.
 
-## 📸 Screenshots & Impressionen
-
-![Startseite](./static/screenshots/startseite.png)
-_Willkommensseite mit den verschiedenen Spielmodi_
+## 📸 Erste Eindrücke
 
 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-    <div>
-        ![Puzzle-Modus](./static/screenshots/puzzle.png)
-        *Puzzle-Modus mit aufgedeckten Kacheln*
-    </div>
-    <div>
-        ![Wordle-Modus](./static/screenshots/wordle.png)
-        *Wordle-Modus mit Tier-Auswahl*
-    </div>
+    <img src="./static/screenshots/start%20breit.jpeg" alt="Breite Startansicht" width="49%" />
+    <img src="./static/screenshots/start%20lang.jpeg" alt="Lange Startansicht" width="49%" />
 </div>
 
 ## 🔄 Flowchart & Wireframes
@@ -42,6 +35,12 @@ graph TD
     D3 -->|Nein| D2
 ```
 
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+    <img src="./static/screenshots/puzzle%20start%20ausfuellen.jpeg" alt="Puzzle Start" width="32%" />
+    <img src="./static/screenshots/puzzle%20teilgeoeffnet.jpeg" alt="Puzzle teilweise geöffnet" width="32%" />
+    <img src="./static/screenshots/puzzle%20mode%20teilaufgedeckt.jpeg" alt="Puzzle Fortschritt" width="32%" />
+</div>
+
 ### Systemarchitektur
 
 ```mermaid
@@ -58,6 +57,11 @@ graph LR
     A --> I[State Management]
     I --> J[Svelte Stores]
 ```
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+    <img src="./static/screenshots/wordle%20ungespielt.jpeg" alt="Wordle Start" width="49%" />
+    <img src="./static/screenshots/zeit%20laueft%20ab%20wordle%20mode.png" alt="Wordle Timer" width="49%" />
+</div>
 
 ### Benutzerinteraktion
 
@@ -81,6 +85,11 @@ sequenceDiagram
         G-->>U: Gibt Feedback
     end
 ```
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0;">
+    <img src="./static/screenshots/highscore%20page.jpeg" alt="Highscore Seite" width="49%" />
+    <img src="./static/screenshots/no%20name%20error.png" alt="Fehlerbehandlung" width="49%" />
+</div>
 
 ### Komponenten-Hierarchie
 
