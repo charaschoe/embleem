@@ -699,12 +699,28 @@
 
 			<div class="game-controls">
 				<div class="input-container">
-					<input
-						type="text"
-						bind:value={guessedName}
-						placeholder="Tiername eingeben..."
-						bind:this={guessedNameInput}
-					/>
+					<div class="input-wrapper">
+						<input
+							type="text"
+							bind:value={guessedName}
+							placeholder="Tiername eingeben..."
+							bind:this={guessedNameInput}
+							on:input={handleInput}
+							on:keydown={handleKeydown}
+						/>
+						{#if showSuggestions && suggestions.length > 0}
+							<div class="suggestions-container">
+								{#each suggestions as suggestion}
+									<button
+										class="suggestion-item {suggestion === currentSuggestion ? 'active' : ''}"
+										on:click={() => selectSuggestion(suggestion)}
+									>
+										{suggestion}
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
 					<button on:click={checkGuess}> Prüfen! 🔍 </button>
 				</div>
 			</div>

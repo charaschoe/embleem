@@ -2,6 +2,121 @@
 
 Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "Programmiersprachen 3" an der HfG Schwäbisch Gmünd.
 
+## 📸 Screenshots & Impressionen
+
+![Startseite](./static/screenshots/startseite.png)
+_Willkommensseite mit den verschiedenen Spielmodi_
+
+<div style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <div>
+        ![Puzzle-Modus](./static/screenshots/puzzle.png)
+        *Puzzle-Modus mit aufgedeckten Kacheln*
+    </div>
+    <div>
+        ![Wordle-Modus](./static/screenshots/wordle.png)
+        *Wordle-Modus mit Tier-Auswahl*
+    </div>
+</div>
+
+## 🔄 Flowchart & Wireframes
+
+### Spielablauf
+
+```mermaid
+graph TD
+    A[Startseite] --> B{Spielmodus-Auswahl}
+    B -->|Puzzle| C[Puzzle-Modus]
+    B -->|Wordle| D[Wordle-Modus]
+
+    C --> C1[Bild wird geladen]
+    C1 --> C2[Kacheln verdeckt]
+    C2 --> C3[Progressives Aufdecken]
+    C3 --> C4{Erraten?}
+    C4 -->|Ja| C5[Erfolg & Konfetti]
+    C4 -->|Nein| C3
+
+    D --> D1[Tier-Auswahl]
+    D1 --> D2[Eingabe-Interface]
+    D2 --> D3{Richtig?}
+    D3 -->|Ja| D4[Erfolg & Konfetti]
+    D3 -->|Nein| D2
+```
+
+### Systemarchitektur
+
+```mermaid
+graph LR
+    A[Frontend/SvelteKit] --> B[API Layer]
+    B --> C[Unsplash API]
+    B --> D[Wikipedia API]
+    B --> E[FlagCDN]
+
+    A --> F[Local Storage]
+    F --> G[Highscores]
+    F --> H[Spielstand]
+
+    A --> I[State Management]
+    I --> J[Svelte Stores]
+```
+
+### Benutzerinteraktion
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant G as Game
+    participant A as APIs
+
+    U->>G: Startet Spiel
+    G->>A: Lädt Ressourcen
+    A-->>G: Bilder & Infos
+    G-->>U: Zeigt Spielmodi
+
+    U->>G: Wählt Modus
+    G->>U: Startet Spielrunde
+
+    loop Spielablauf
+        U->>G: Macht Eingabe
+        G->>G: Prüft Eingabe
+        G-->>U: Gibt Feedback
+    end
+```
+
+### Komponenten-Hierarchie
+
+- 🏠 App Root
+  - 📱 Layout
+    - 🎮 Game Container
+      - 🧩 Puzzle Mode
+        - 🖼️ Image Grid
+        - ⌨️ Input Field
+        - 🎯 Progress Display
+      - 📝 Wordle Mode
+        - 🎲 Animal Selection
+        - 🚩 Flag Display
+        - ✨ Success Animation
+    - 📊 Highscore Board
+    - ⚙️ Settings Panel
+
+### Datenfluss
+
+- 📥 Input Layer
+
+  - Benutzer-Interaktionen
+  - API-Responses
+  - Local Storage
+
+- 🔄 Processing Layer
+
+  - State Management
+  - Game Logic
+  - Validation
+
+- 📤 Output Layer
+  - UI Updates
+  - Feedback System
+  - Score Tracking
+
 ## 📁 Projektarchitektur & Technischer Stack
 
 **Frontend**: SvelteKit mit TypeScript  
@@ -208,3 +323,92 @@ GitHub: [@charaschoe]
 ---
 
 Entwickelt mit ❤️ an der HfG Schwäbisch Gmünd
+
+## 🔄 Entwicklungsprozess & Herausforderungen
+
+### Initiale Planung & Prototyping
+
+```mermaid
+graph TD
+    A[Erste Idee: Tier-Quiz] -->|Iteration 1| B[Einfaches Quiz]
+    B -->|Problem| C[Zu wenig Interaktion]
+    C -->|Lösung| D[Puzzle-Mechanik]
+
+    D -->|Challenge| E[Bildqualität Unsplash]
+    E -->|Problem| F[Unpassende Tierbilder]
+    F -->|Lösung| G[Eigene Bildauswahl + Fallback]
+
+    H[Wordle-Inspiration] -->|Integration| I[Dual-Mode Konzept]
+    I -->|Challenge| J[Komplexität für Kinder]
+    J -->|Lösung| K[Vereinfachte UI]
+```
+
+### Technische Herausforderungen
+
+#### API-Integration Probleme
+
+- ❌ Unsplash API Rate Limits erreicht während Testing
+- ❌ Wikipedia API lieferte zu komplexe Texte
+- ✅ Lösung: Mehrstufiges Fallback-System & Text-Vereinfachung
+
+#### Performance-Probleme
+
+- ❌ Lange Ladezeiten bei Bildern
+- ❌ UI-Verzögerungen bei API-Calls
+- ✅ Lösung: Lazy Loading & Optimierte Caching-Strategie
+
+#### Kindgerechte Anpassungen
+
+- ❌ Erste Version zu komplex
+- ❌ Text-Eingabe frustrierend
+- ✅ Lösung: Vereinfachte UI & Fehlertolerante Eingabe
+
+### Entwicklungsiterationen
+
+1. **Prototype v0.1**
+
+   - Basis-Quiz ohne Bilder
+   - Simple Textabfrage
+   - _Problem: Zu langweilig für Kinder_
+
+2. **Alpha v0.2**
+
+   - Integration von Unsplash
+   - Erste Puzzle-Mechanik
+   - _Problem: Performance-Einbrüche_
+
+3. **Beta v0.3**
+
+   - Dual-Mode System
+   - Verbesserte Bildverwaltung
+   - _Problem: Zu komplexe Bedienung_
+
+4. **Release v1.0**
+   - Kindgerechtes UI
+   - Optimierte Performance
+   - Fehlertolerantes System
+
+### Gelernte Lektionen
+
+1. **API-Management**
+
+   - Frühzeitige Implementierung von Rate Limiting
+   - Lokale Fallbacks sind essentiell
+   - Caching reduziert API-Last
+
+2. **Kindgerechtes Design**
+
+   - Weniger ist mehr
+   - Direktes Feedback wichtig
+   - Frustration vermeiden
+
+3. **Performance**
+
+   - Bilder voroptimieren
+   - API-Calls minimieren
+   - Progressive Loading
+
+4. **Testing**
+   - Mit Zielgruppe testen
+   - Edge Cases beachten
+   - Offline-Funktionalität wichtig
