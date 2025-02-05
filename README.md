@@ -21,7 +21,7 @@ text
 │   │   ├── PuzzleGrid.svelte    # 3x3 Grid-System
 │   │   └── WordleMode.svelte    # Barrierefreie Klick-Interface
 │   ├── lib/              
-│   │   ├── animalList.js        # 14 Nationaltiere
+│   │   ├── animalList.ts        # National animals and heraldic creatures
 │   │   ├── countryUtils.js      # Länder-Mapping
 │   │   ├── highscoreStore.js   # Lokale Speicherung
 │   │   └── unsplash.js         # Bildintegration
@@ -53,6 +53,82 @@ text
 - **Responsives Grid-Layout**: Das Layout des Spiels ist responsiv und passt sich verschiedenen Bildschirmgrößen an, um eine optimale Benutzererfahrung auf allen Geräten zu gewährleisten.
 - **Große Buttons (ab 150px)**: Die Buttons im Spiel sind groß (mindestens 150px), um es Kindern zu erleichtern, sie zu drücken.
 - **Lazy Loading für Bilder**: Bilder werden nur geladen, wenn sie benötigt werden, was die Ladezeiten verkürzt und die Leistung verbessert.
+
+## 🔧 Technische Details
+
+### 🎮 Spielmechaniken
+
+#### 🧩 Puzzle-Modus
+- **Schwierigkeitsgrade**:
+  - Einfach: 4x4 Raster mit 2 initial aufgedeckten Feldern
+  - Mittel: 3x3 Raster
+- **Punktesystem**: 
+  - Startpunkte: 100-150 (je nach Schwierigkeit)
+  - Punktabzug bei falschen Versuchen
+- **Progressives Aufdecken**: Systematische Enthüllung der Bildkacheln
+- **Erfolgsfeedback**: Konfetti-Animation bei korrekter Lösung
+
+#### 🎯 Wordle-Modus
+- **Tierdatenbank**: 14 sorgfältig ausgewählte Nationaltiere
+- **Barrierefreie Bedienung**: Klick-basierte Benutzeroberfläche
+- **Versuchsverfolgung**: Tracking aller Rateversuche
+- **Spieleridentifikation**: Kreative Platzhalternamen für Spieler
+
+### 🦁 Tierdaten-Struktur
+- **Datensatz pro Tier**:
+  - Offizieller Name
+  - Herkunftsland
+  - Multiple Synonyme für flexible Erkennung
+  - Optimierte Suchbegriffe für Bildabruf
+- **Beispiele**:
+  - Bundesadler (Deutschland)
+  - Doppelköpfiger Adler (Albanien)
+  - Weißer Adler (Polen)
+  - Leo Belgicus (Belgien)
+  - Bengalischer Tiger (Indien)
+  - Malaiischer Tiger (Malaysia)
+
+### 💻 Technische Features
+
+#### 📸 Bildverwaltung
+- **Unsplash-Integration**:
+  - Qualitätsfilter (min. 800x800px)
+  - Inhaltliche Filterung für passende Tierporträts
+  - Blur-Hash für progressives Laden
+- **Fallback-System**: Lokale Bildressourcen bei API-Ausfällen
+
+#### 📚 Wikipedia-Integration
+- **Inhalt**: Prägnante 2-Satz-Beschreibungen auf Deutsch
+- **Fehlerbehandlung**: Benutzerfreundliche Fallback-Nachrichten
+- **Performance**: Caching von API-Antworten
+
+#### 🔄 State Management
+- **Svelte Stores**: Reaktive Zustandsverwaltung
+- **Lokaler Speicher**: Highscore-Persistenz
+- **Sitzungsverwaltung**: Spielfortschrittsspeicherung
+
+### 🎨 UI/UX-Optimierungen
+- **Kinderfreundliche Oberfläche**:
+  - Große, zugängliche Schaltflächen
+  - Klares Feedback-System
+  - Countdown vor Spielbeginn
+  - Progressive Schwierigkeitsgrade
+- **Responsives Design**: Maximale Breite und flexible Layouts
+- **Dschungel-Thema**: Angepasste Farbvariablen
+- **Fehlerbehandlung**: Benutzerfreundliche Fehlermeldungen
+
+### 📚 Bildungselemente
+- **Länderflaggen**: Integration von Nationalflaggen
+- **Wikipedia-Wissen**: Lehrreiche Tierinformationen
+- **Sprachförderung**: Synonymerkennung
+- **Kultureller Kontext**: Fokus auf Nationaltiere
+
+### ⚡ Performance-Optimierungen
+- **Bildoptimierung**: Filterung und Qualitätsprüfung
+- **Lazy Loading**: Bedarfsgesteuertes Laden
+- **Offline-Funktionalität**: Lokale Fallbacks
+- **Effizientes State Management**: Optimierte Zustandsverwaltung
+- **API-Limitierung**: Kontrollierte Anfragen
 
 ## 🚀 Installation  
 ```bash

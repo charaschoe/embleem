@@ -1,4 +1,20 @@
-export async function fetchUnsplashImage(query) {
+interface UnsplashPhoto {
+	urls: {
+		regular: string;
+	};
+	tags: {
+		title: string;
+	}[];
+	width: number;
+	height: number;
+	blur_hash: string;
+}
+
+interface UnsplashResponse {
+	results: UnsplashPhoto[];
+}
+
+export async function fetchUnsplashImage(query: string): Promise<string> {
 	const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 	const apiUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}%20animal%20portrait&orientation=landscape&content_filter=high&per_page=30&client_id=${accessKey}`;
 
@@ -8,7 +24,7 @@ export async function fetchUnsplashImage(query) {
 			return getLocalImagePath(query);
 		}
 
-		const data = await response.json();
+		const data = await response.json() as UnsplashResponse;
 		const filteredResults = filterAnimalPortraits(data.results);
 
 		if (filteredResults.length > 0) {
@@ -23,11 +39,11 @@ export async function fetchUnsplashImage(query) {
 	}
 }
 
-function getLocalImagePath(query) {
+function getLocalImagePath(query: string): string {
 	return `/animals/${query.toLowerCase().replace(' ', '-')}.jpg`;
 }
 
-function filterAnimalPortraits(results) {
+function filterAnimalPortraits(results: UnsplashPhoto[]): UnsplashPhoto[] {
 	return results.filter((photo) => {
 		const tags = photo.tags.map((tag) => tag.title.toLowerCase());
 		return (
@@ -43,7 +59,15 @@ function filterAnimalPortraits(results) {
 	});
 }
 
-export const animalList = [
+export interface NationalAnimal {
+	name: string;
+	country: string;
+	synonyms: string[];
+	searchTerms: string;
+	category: 'heraldic' | 'mythical' | 'mammal' | 'bird' | 'reptile';
+}
+
+export const animalList: NationalAnimal[] = [
 	{
 		name: 'Bundesadler',
 		country: 'Deutschland',
@@ -156,4 +180,4 @@ export const animalList = [
 		searchTerms: 'sri lanka lion flag symbol national',
 		category: 'heraldic'
 	}
-]; 
+];
