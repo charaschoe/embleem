@@ -12,26 +12,109 @@ Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "
 - `express` für den Server
 - `svelte/store` für State Management
 
+### 📂 Projektstruktur
 ```
-text
 ├── .svelte-kit/
 ├── node_modules/
 ├── src/
 │   ├── components/        
 │   │   ├── PuzzleGrid.svelte    # 3x3 Grid-System
 │   │   └── WordleMode.svelte    # Barrierefreie Klick-Interface
+│   │   
 │   ├── lib/              
-│   │   ├── animalList.ts        # National animals and heraldic creatures
+│   │   ├── animalList.ts        # Nationaltiere und heraldische Tiere
 │   │   ├── countryUtils.js      # Länder-Mapping
-│   │   ├── highscoreStore.js   # Lokale Speicherung
-│   │   └── unsplash.js         # Bildintegration
+│   │   ├── highscoreStore.js    # Lokale Speicherung
+│   │   ├── unsplash.js         # Bildintegration
+│   │   └── wikipedia.js        # Tier-Informationen
+│   │   
 │   ├── routes/           
-│   │   ├── game/+page.svelte    # Kernspiellogik
-│   │   └── +layout.svelte       # Navigation
-│   ├── app.css           # Globale Styles
-│   └── app.html          # HTML-Template
-└── static/               # Assets
+│   │   ├── game/
+│   │   │   ├── puzzle/+page.svelte   # Puzzle-Modus
+│   │   │   └── wordle/+page.svelte   # Wordle-Modus
+│   │   │   
+│   │   ├── highscores/+page.svelte   # Bestenliste
+│   │   └── +page.svelte             # Startseite
+│   │   
+│   ├── app.css                      # Globale Styles
+│   └── app.html                     # HTML-Template
+│   
+├── static/                          # Statische Assets
+│   ├── animals/                     # Fallback-Tierbilder
+│   └── icons/                       # UI-Icons
+│   
+├── tests/                           # Testdateien
+│   
+├── package.json
+│   
+├── svelte.config.js
+│   
+├── tsconfig.json
+│   
+└── vite.config.js
 ```
+
+## 🎨 Texthierarchie und Design-System
+
+### Schriftgrößen und Hierarchie
+
+Wir verwenden eine konsistente Texthierarchie über alle Komponenten hinweg:
+
+#### Überschriften
+- **H1 (2.4rem)**: Hauptüberschriften der Seiten
+  - Beispiele: "Willkommen im Tier-Abenteuer! 🌟", "Ruhmeshalle der Entdecker"
+- **H2 (1.8rem)**: Wichtige Sektionsüberschriften
+  - Beispiele: "Wähle deinen Spielmodus 🎮", "Fantastische Entdeckung!"
+- **H3 (1.8rem)**: Unterabschnitte und Komponententitel
+  - Beispiele: "Puzzle-Modus", "So funktioniert's 🌟"
+
+#### Textkörper
+- **Normaler Text (1.4rem)**: Hauptinhalt, Beschreibungen, Spielanweisungen
+  - Beispiele: Spielerklärungen, Feedback-Nachrichten, Tierbeschreibungen
+- **Info-Text (1.2rem)**: Zusätzliche Informationen, Hinweise
+  - Beispiele: Button-Info, Ladehinweise, Motivationstexte
+
+### Einheitliches Wording
+
+Wir verwenden durchgängig folgende Begriffe:
+- "Tier-Abenteuer" als Hauptbegriff
+- "Entdecker" für die Spieler
+- "Puzzle-Modus" und "Wordle-Modus" als Spielmodi
+- Konsistente Button-Beschriftungen (z.B. "Abenteuer starten! 🚀")
+- Einheitliche Feedback-Nachrichten
+- Durchgängige Verwendung passender Emojis zur Visualisierung
+
+### Komponenten-spezifische Anpassungen
+
+#### Startseite
+- Moderneres Layout mit klarer visueller Hierarchie
+- Verbesserte Button-Gestaltung mit Hover-Effekten
+- Responsive Anpassungen für mobile Geräte
+
+#### Highscore-Seite
+- Neue "Ruhmeshalle der Entdecker" Gestaltung
+- Verbesserte Filteroptionen und Tabellendarstellung
+- Motivierender Empty State für neue Spieler
+
+#### Spielmodi
+- Einheitliche Spieleroberfläche
+- Klare Hinweisstruktur
+- Verbesserte Feedback-Mechanismen
+- Optimierte mobile Darstellung
+
+### Responsive Design
+
+Alle Komponenten wurden für verschiedene Bildschirmgrößen optimiert:
+- Desktop (> 1024px): Volle Funktionalität
+- Tablet (768px - 1024px): Angepasstes Layout
+- Mobil (< 768px): Optimierte Darstellung und Touch-Interaktion
+
+### Visuelle Konsistenz
+
+- Einheitliche Abstände und Paddings
+- Konsistente Hover-Effekte
+- Durchgängige Verwendung von Schatten und Rundungen
+- Harmonische Farbpalette mit definierten Variablen
 
 ## ✨ Kernfunktionen
 

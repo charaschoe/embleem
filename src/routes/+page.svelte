@@ -17,33 +17,33 @@
 
 <div class="jungle-container" style="background-image: url('{backgroundImage}')">
 	<div class="content-box">
-		<h1>Willkommen im Dschungel-Abenteuer!</h1>
-		<p>Hilf uns, die versteckten Tiere zu entdecken und lerne spannende Fakten über sie!</p>
+		<h1>Willkommen im Tier-Abenteuer! 🌟</h1>
+		<p class="intro-text">Entdecke die faszinierende Welt der Nationaltiere und lerne spannende Fakten über sie!</p>
 
-		<button class="start-button" on:click={() => goto('/game/puzzle')}> Spiel starten </button>
-		<p class="button-info">Startet den Puzzle Mode für dein Abenteuer!</p>
+		<button class="start-button" on:click={() => goto('/game/puzzle')}> Abenteuer starten! 🚀 </button>
+		<p class="button-info">Starte deine Entdeckungsreise im Puzzle-Modus</p>
 
 		<div class="divider"></div>
 
-		<h2>So wird gespielt</h2>
+		<h2>Wähle deinen Spielmodus 🎮</h2>
 		<div class="modes-grid">
 			<button class="mode" on:click={() => goto('/game/puzzle')}>
 				<span class="mode-icon">🧩</span>
 				<div class="mode-content">
-					<h3>Puzzle Mode</h3>
+					<h3>Puzzle-Modus</h3>
 					<p>
-						Der Puzzle Mode ist für alle Entdecker! Finde versteckte Tiere im Dschungel und löse
-						spannende Rätsel.
+						Der perfekte Modus für alle Entdecker! Decke die versteckten Tiere Stück für Stück auf und
+						rate, welches Nationaltier sich dahinter verbirgt.
 					</p>
 				</div>
 			</button>
 			<button class="mode" on:click={() => goto('/game/wordle')}>
 				<span class="mode-icon">🎯</span>
 				<div class="mode-content">
-					<h3>Wordle Mode</h3>
+					<h3>Wordle-Modus</h3>
 					<p>
-						Speziell für kleine Entdecker, die noch üben: Rate Tiernamen mit Hilfe von bunten
-						Hinweisen - ganz ohne Tastatur!
+						Der ideale Einstieg für junge Entdecker! Rate Tiernamen mit Hilfe von bunten Hinweisen -
+						einfach und intuitiv ohne Tastatur.
 					</p>
 				</div>
 			</button>
@@ -52,8 +52,10 @@
 
 	<div class="footer">
 		<p>
-			Semesterprojekt • HfG Schwäbisch Gmünd • Tierbilder: Unsplash.com • <a
-				href="https://github.com/charaschoe/embleem">GitHub</a
+			Ein Semesterprojekt der HfG Schwäbisch Gmünd • Tierbilder von Unsplash.com • <a
+				href="https://github.com/charaschoe/embleem"
+				target="_blank"
+				rel="noopener noreferrer">GitHub</a
 			>
 		</p>
 	</div>
@@ -87,33 +89,51 @@
 	}
 
 	h1 {
-		font-size: 1.8rem;
+		font-size: 2.4rem;
 	}
 	h2 {
-		font-size: 1.4rem;
+		font-size: 1.8rem;
 	}
 
 	p {
 		text-align: center;
 		line-height: 1.5;
 		margin: 0;
+		font-size: 1.4rem;
+	}
+
+	.intro-text {
+		font-size: 1.4rem;
+		text-align: center;
+		line-height: 1.6;
+		margin: 1rem 0 2rem 0;
+		color: var(--jungle-text);
 	}
 
 	.start-button {
 		background: var(--jungle-primary);
 		color: white;
 		border: none;
-		padding: 1rem 2rem;
-		border-radius: 8px;
-		font-size: 1.2rem;
+		padding: 1.2rem 2.5rem;
+		border-radius: 12px;
+		font-size: 1.4rem;
 		cursor: pointer;
 		margin: 0 auto;
 		display: block;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.start-button:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 	}
 
 	.button-info {
-		font-size: 0.9rem;
+		font-size: 1.2rem;
 		opacity: 0.8;
+		margin-top: 0.8rem;
+		text-align: center;
 	}
 
 	.divider {
@@ -131,22 +151,38 @@
 	.mode {
 		display: grid;
 		grid-template-columns: auto 1fr;
-		gap: 1rem;
-		padding: 1rem;
-		background: #f5f5f5;
-		border: none;
-		border-radius: 8px;
+		gap: 1.2rem;
+		padding: 1.5rem;
+		background: var(--jungle-light);
+		border: 3px solid var(--jungle-primary);
+		border-radius: 15px;
 		cursor: pointer;
 		text-align: left;
+		transition: all 0.3s ease;
+	}
+
+	.mode:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+		background: white;
 	}
 
 	.mode-icon {
-		font-size: 1.5rem;
+		font-size: 2.4rem;
+		color: var(--jungle-primary);
 	}
 
 	.mode-content h3 {
 		color: var(--jungle-primary);
-		margin: 0 0 0.5rem 0;
+		margin: 0 0 0.8rem 0;
+		font-size: 1.8rem;
+	}
+
+	.mode-content p {
+		font-size: 1.4rem;
+		margin: 0;
+		line-height: 1.5;
+		color: var(--jungle-text);
 	}
 
 	.footer {
@@ -157,7 +193,7 @@
 		background: var(--jungle-primary);
 		color: white;
 		padding: 0.5rem;
-		font-size: 0.75rem;
+		font-size: 1.2rem;
 		text-align: center;
 	}
 

@@ -42,23 +42,23 @@
 </script>
 
 <div class="puzzle-mode">
-	<h1>🏆 Tier-Champions</h1>
-	<p class="subtitle">Unsere mutigsten Tierentdecker!</p>
+	<h1>🏆 Ruhmeshalle der Entdecker</h1>
+	<p class="subtitle">Hier findest du die erfolgreichsten Tier-Entdecker!</p>
 
 	<div class="filter-container">
 		<div class="filter-group">
 			<label for="mode">Spielmodus:</label>
 			<select id="mode" bind:value={selectedMode}>
 				<option value="all">Alle Modi</option>
-				<option value="Wordle">Tier-Raten</option>
-				<option value="Puzzle">Puzzle</option>
+				<option value="Puzzle">Puzzle-Modus</option>
+				<option value="Wordle">Wordle-Modus</option>
 			</select>
 		</div>
 
 		<div class="filter-group">
 			<label for="timeframe">Zeitraum:</label>
 			<select id="timeframe" bind:value={selectedTimeframe}>
-				<option value="all">Alle Zeit</option>
+				<option value="all">Gesamter Zeitraum</option>
 				<option value="today">Heute</option>
 				<option value="week">Diese Woche</option>
 				<option value="month">Dieser Monat</option>
@@ -66,12 +66,12 @@
 		</div>
 
 		<div class="filter-group">
-			<label for="search">Suche:</label>
+			<label for="search">Entdecker suchen:</label>
 			<input
 				id="search"
 				type="text"
 				bind:value={searchQuery}
-				placeholder="Nach Namen suchen..."
+				placeholder="Name des Entdeckers..."
 			/>
 		</div>
 	</div>
@@ -82,9 +82,9 @@
 				<thead>
 					<tr>
 						<th>Rang</th>
-						<th>Name</th>
-						<th>Tier</th>
-						<th>Modus</th>
+						<th>Entdecker</th>
+						<th>Entdecktes Tier</th>
+						<th>Spielmodus</th>
 						<th>Punkte</th>
 						<th>Versuche</th>
 						<th>Datum</th>
@@ -102,9 +102,9 @@
 							</td>
 							<td>{score.name}</td>
 							<td>{score.animal}</td>
-							<td>{score.mode}</td>
-							<td class="score">{score.score}</td>
-							<td>{score.attempts || score.tiles}</td>
+							<td>{score.mode === 'Puzzle' ? 'Puzzle-Modus' : 'Wordle-Modus'}</td>
+							<td class="score">{score.score} ⭐</td>
+							<td>{score.attempts || score.tiles} {score.mode === 'Puzzle' ? 'Kacheln' : 'Versuche'}</td>
 							<td>{new Date(score.date).toLocaleDateString('de-DE')}</td>
 						</tr>
 					{/each}
@@ -113,8 +113,9 @@
 		</div>
 	{:else}
 		<div class="empty-state">
-			<p>🦁 Noch keine Highscores vorhanden!</p>
-			<p>Sei der Erste, der sich in die Bestenliste einträgt.</p>
+			<h2>🦁 Werde der erste Entdecker!</h2>
+			<p>Die Ruhmeshalle wartet darauf, mit deinen Erfolgen gefüllt zu werden.</p>
+			<p class="motivation-text">Starte jetzt dein Tier-Abenteuer und sichere dir einen Platz in der Bestenliste!</p>
 		</div>
 	{/if}
 </div>
@@ -123,7 +124,7 @@
 	.puzzle-mode {
 		background: linear-gradient(145deg, #fff6e5, #ffe0b2);
 		border-radius: 30px;
-		border: 4px solid var(--jungle-primary);
+		border: 6px solid var(--jungle-primary);
 		box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 		padding: 3rem;
 		max-width: 1200px;
@@ -131,17 +132,26 @@
 	}
 
 	h1 {
-		font-size: 3rem;
+		font-size: 2.4rem;
 		color: var(--jungle-primary);
 		text-align: center;
 		margin-bottom: 1rem;
+		text-shadow: 2px 2px 4px var(--jungle-shadow);
+	}
+
+	h2 {
+		font-size: 1.8rem;
+		color: var(--jungle-primary);
+		margin-bottom: 1rem;
+		text-align: center;
 	}
 
 	.subtitle {
-		font-size: 1.8rem;
+		font-size: 1.4rem;
 		color: var(--jungle-text);
 		text-align: center;
 		margin-bottom: 3rem;
+		line-height: 1.5;
 	}
 
 	.filter-container {
@@ -165,6 +175,7 @@
 	.filter-group label {
 		font-size: 1.4rem;
 		color: var(--jungle-text);
+		font-weight: 500;
 	}
 
 	select, input {
@@ -174,6 +185,12 @@
 		border-radius: 15px;
 		background: white;
 		min-width: 200px;
+		transition: all 0.3s ease;
+	}
+
+	select:focus, input:focus {
+		outline: none;
+		box-shadow: 0 0 0 3px rgba(var(--jungle-primary-rgb), 0.3);
 	}
 
 	.table-container {
@@ -187,7 +204,7 @@
 	table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 1.6rem;
+		font-size: 1.4rem;
 	}
 
 	th {
@@ -195,7 +212,8 @@
 		color: white;
 		padding: 1.5rem;
 		text-align: left;
-		font-size: 1.6rem;
+		font-size: 1.4rem;
+		white-space: nowrap;
 	}
 
 	td {
@@ -205,13 +223,13 @@
 	}
 
 	.rank {
-		font-size: 1.8rem;
+		font-size: 1.4rem;
 		font-weight: bold;
 		text-align: center;
 	}
 
 	.medal {
-		font-size: 2rem;
+		font-size: 1.8rem;
 	}
 
 	.score {
@@ -224,7 +242,7 @@
 	tr.bronze { background: rgba(205, 127, 50, 0.1); }
 
 	tr:hover {
-		background: rgba(255, 159, 77, 0.1);
+		background: rgba(var(--jungle-primary-rgb), 0.1);
 		transform: scale(1.01);
 		transition: all 0.3s ease;
 	}
@@ -235,17 +253,20 @@
 		background: white;
 		border-radius: 20px;
 		margin-top: 2rem;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 	}
 
 	.empty-state p {
-		font-size: 2rem;
+		font-size: 1.4rem;
 		margin: 1rem 0;
 		color: var(--jungle-text);
+		line-height: 1.6;
 	}
 
-	.empty-state p:first-child {
-		font-size: 2.5rem;
+	.motivation-text {
+		font-size: 1.2rem;
 		color: var(--jungle-primary);
+		margin-top: 2rem;
 	}
 
 	@media (max-width: 768px) {
@@ -255,7 +276,7 @@
 		}
 
 		.filter-container {
-			padding: 1rem;
+			padding: 1.5rem;
 		}
 
 		select, input {
@@ -264,7 +285,11 @@
 
 		td, th {
 			padding: 1rem;
-			font-size: 1.2rem;
+			font-size: 1.4rem;
+		}
+
+		.empty-state {
+			padding: 2rem;
 		}
 	}
 </style>

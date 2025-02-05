@@ -288,17 +288,17 @@
 </script>
 
 <div class="wordle-mode">
-    <h1>Tier-Ratespiel</h1>
+    <h1>Tier-Rätsel: Wordle-Modus</h1>
 
-    <p class="hint">Finde das Nationaltier von {country}!</p>
+    <p class="hint">Finde das Nationaltier von {country}! 🌍</p>
 
     {#if !showGame}
         <div class="name-input-container preschool-theme">
             <div class="welcome-box">
-                <h2>Hallo kleiner Entdecker! 🐾</h2>
+                <h2>Willkommen, junger Entdecker! 🐾</h2>
                 <p class="name-intro">
-                    Lass uns zusammen Tiere entdecken!<br/>
-                    Wie sollen wir dich nennen?
+                    Bist du bereit für ein spannendes Tier-Abenteuer?<br/>
+                    Verrate uns deinen Namen, und los geht's!
                 </p>
             </div>
 
@@ -307,11 +307,11 @@
                     <input
                         type="text"
                         bind:value={playerName}
-                        placeholder="Dein Spitzname..."
+                        placeholder="Dein Entdecker-Name..."
                         class="kid-input"
                     />
                     <button class="name-generator" on:click={generateRandomName}>
-                        🎲 Zaubername
+                        🎲 Zufallsname
                     </button>
                 </div>
                 <button class="safari-button" on:click={startGame}>
@@ -322,28 +322,27 @@
             <div class="tutorial-box">
                 <h3>So funktioniert's 🌟</h3>
                 <ul>
-                    <li>🔍 Klicke auf die Kacheln um das Tier zu finden</li>
-                    <li>🐾 Wähle den Namen aus der Liste aus</li>
-                    <li>🌈 Je schneller du bist, desto mehr Sterne sammelst du</li>
+                    <li>🔍 Decke die Kacheln auf, um das versteckte Tier zu sehen</li>
+                    <li>🐾 Wähle den richtigen Tiernamen aus der Liste</li>
+                    <li>⭐ Je weniger Versuche, desto mehr Punkte sammelst du</li>
+                    <li>🎯 Finde das richtige Tier und werde zum Meister-Entdecker!</li>
                 </ul>
             </div>
         </div>
     {:else}
         <div class="game-container">
-            <p class="player-welcome">Los geht's, {playerName}!</p>
+            <p class="player-welcome">Auf geht's, {playerName}! Zeig uns dein Können!</p>
             
             <div class="game-layout">
                 <div class="hint-panel">
                     <div class="hint-box">
-                        <h3>🌟 Hinweise</h3>
+                        <h3>🌟 Deine Hinweise</h3>
                         <ul>
-                            <li>🔍 Das Tier lebt in {country}</li>
-                            <li>🎯 Decke Kacheln auf, um mehr zu sehen</li>
-                            <li>⭐ Weniger Versuche = Mehr Punkte!</li>
+                            <li>🌍 Das Tier stammt aus {country}</li>
+                            <li>🔍 Decke Kacheln auf, um mehr zu entdecken</li>
+                            <li>⭐ Weniger Versuche = Mehr Sterne!</li>
+                            <li>💫 Aktuelle Punktzahl: {points - clickedAnimals.size * 10 - counter * 5}</li>
                         </ul>
-                    </div>
-                    <div class="score-display">
-                        Aktuelle Punktzahl: {points - clickedAnimals.size * 10 - counter * 5}
                     </div>
                 </div>
 
@@ -358,7 +357,7 @@
                     </div>
 
                     <div class="animal-selection">
-                        <h3>Welches Tier ist das? 🤔</h3>
+                        <h3>Welches Tier verbirgt sich hier? 🤔</h3>
                         <div class="animal-grid">
                             {#each randomizedAnimalList as animal}
                                 <button
@@ -413,32 +412,33 @@
                     {feedback}
                     {#if isCorrect}
                         <br />
-                        <span class="attempts">Du hast {clickedAnimals.size} Versuche gebraucht.</span>
+                        <span class="attempts">Du hast {clickedAnimals.size} Versuche gebraucht - super gemacht!</span>
                     {/if}
                 </p>
             {/if}
 
             {#if isCorrect}
                 <div class="success">
-                    <p>Super gemacht {playerName}! Das Tier ist ein {correctAnimal}, das Nationaltier von {country}.</p>
-                    <p>Punktzahl: {calculateScore()}</p>
+                    <h2>🎉 Fantastische Entdeckung!</h2>
+                    <p class="success-text">Großartig, {playerName}! Du hast das Nationaltier von {country} gefunden: den {correctAnimal}!</p>
+                    <p class="score-text">Deine Punktzahl: {calculateScore()} ⭐</p>
                     
                     {#if apiError}
                         <div class="error-message">{apiError}</div>
                     {:else if wikiInfo}
                         <div class="wiki-info">
-                            <h4>Wissenswertes aus Wikipedia:</h4>
+                            <h3>Spannende Fakten:</h3>
                             <p>{wikiInfo}</p>
                         </div>
                     {:else}
-                        <p class="loading-info">Lade interessante Fakten...</p>
+                        <p class="loading-info">Lade interessante Fakten über das Tier...</p>
                     {/if}
                 </div>
             {/if}
 
             {#if showCountdown}
                 <div class="countdown-container">
-                    <p class="countdown-text">Neues Spiel in</p>
+                    <p class="countdown-text">Nächstes Abenteuer in</p>
                     <div class="countdown-number">{countdown}</div>
                     <p class="countdown-text">Sekunden</p>
                 </div>
@@ -449,13 +449,50 @@
 
 <style>
     .wordle-mode {
-        width: 100%;
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background-color: var(--jungle-light);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 25px;
+        border: 6px solid var(--jungle-primary);
+        box-shadow: 0 8px 24px var(--jungle-shadow);
+        padding: 30px;
+        max-width: 900px;
+        margin: 30px auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    h1 {
+        font-size: 2.4rem;
+        text-align: center;
+        color: var(--jungle-primary);
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px var(--jungle-shadow);
+    }
+
+    h2 {
+        font-size: 1.8rem;
+        color: var(--jungle-primary);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    h3 {
+        font-size: 1.8rem;
+        color: var(--jungle-primary);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    p {
+        font-size: 1.4rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .hint {
+        font-size: 1.4rem;
+        color: var(--jungle-text);
+        text-align: center;
+        margin-bottom: 2rem;
     }
 
     .name-input-container {
@@ -476,13 +513,8 @@
         color: white;
     }
 
-    .welcome-box h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-    }
-
     .name-intro {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         line-height: 1.6;
     }
 
@@ -498,21 +530,21 @@
         width: 100%;
         max-width: 300px;
         padding: 1rem;
-        border: 2px solid var(--jungle-primary);
-        border-radius: 8px;
-        font-size: 1.1rem;
+        border: 3px solid var(--jungle-primary);
+        border-radius: 12px;
+        font-size: 1.4rem;
         background: var(--jungle-light);
     }
 
     .name-generator {
-        padding: 1rem 2rem;
+        padding: 1rem 1.5rem;
         background: var(--jungle-secondary);
         color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
+        border-radius: 12px;
+        font-size: 1.4rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
     }
 
     .safari-button {
@@ -523,8 +555,8 @@
         background: var(--jungle-primary);
         color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 1.2rem;
+        border-radius: 12px;
+        font-size: 1.4rem;
         cursor: pointer;
         transition: transform 0.2s ease;
         display: block;
@@ -533,6 +565,7 @@
     .safari-button:hover,
     .name-generator:hover {
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .tutorial-box {
@@ -542,43 +575,27 @@
         border-radius: 12px;
     }
 
-    .tutorial-box h3 {
-        font-size: 1.2rem;
-        color: var(--jungle-primary);
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-
     .tutorial-box ul {
         list-style: none;
         padding: 0;
     }
 
     .tutorial-box li {
-        font-size: 1rem;
-        padding: 0.8rem;
-        margin: 0.5rem 0;
+        font-size: 1.4rem;
+        padding: 1rem;
+        margin: 0.8rem 0;
         background: white;
         border-radius: 8px;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.8rem;
     }
 
-    h1 {
-        font-size: 2.4rem;
-        color: var(--jungle-primary);
-        margin-bottom: 1rem;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .hint {
-        font-size: 1.2rem;
+    .player-welcome {
+        font-size: 1.4rem;
         color: var(--jungle-text);
-        opacity: 0.8;
-        margin-bottom: 2rem;
         text-align: center;
+        margin-bottom: 2rem;
     }
 
     .game-layout {
@@ -598,44 +615,20 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     }
 
-    .hint-box {
-        margin-bottom: 1.5rem;
-    }
-
-    .hint-box h3 {
-        font-size: 1.2rem;
-        color: var(--jungle-primary);
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
     .hint-box ul {
         list-style: none;
         padding: 0;
     }
 
     .hint-box li {
-        font-size: 1rem;
-        padding: 0.8rem;
-        margin: 0.5rem 0;
+        font-size: 1.4rem;
+        padding: 1rem;
+        margin: 0.8rem 0;
         background: var(--jungle-light);
         border-radius: 8px;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-    }
-
-    .score-display {
-        font-size: 1.2rem;
-        color: var(--jungle-primary);
-        font-weight: bold;
-        padding: 1rem;
-        background: var(--jungle-light);
-        border-radius: 8px;
-        margin-top: 1rem;
-        text-align: center;
+        gap: 0.8rem;
     }
 
     .main-game {
@@ -672,6 +665,7 @@
 
     .tile:hover {
         background: rgba(0, 0, 0, 0.7);
+        transform: scale(1.05);
     }
 
     .tile.revealed {
@@ -686,42 +680,22 @@
         margin: 0 auto;
     }
 
-    .animal-selection h3 {
-        font-size: 1.2rem;
-        color: var(--jungle-text);
-        margin-bottom: 1rem;
-        opacity: 0.8;
-        text-align: center;
-    }
-
-    .animal-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.8rem;
-    }
-
     .animal-button {
-        padding: 0.8rem;
-        min-height: 54px;
-        font-size: 1rem;
-        background: var(--jungle-light);
-        border: none;
-        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        background: white;
+        border: 3px solid var(--jungle-primary);
+        border-radius: 12px;
+        font-size: 1.4rem;
         cursor: pointer;
-        transition: all 0.2s ease;
-        color: var(--jungle-text);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        line-height: 1.2;
-        word-break: break-word;
+        transition: all 0.3s ease;
+        width: 100%;
     }
 
     .animal-button:hover:not(:disabled) {
         background: var(--jungle-secondary);
         color: white;
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .animal-button.clicked {
@@ -732,34 +706,66 @@
     }
 
     .feedback {
-        font-size: 1.1rem;
-        margin-top: 1.5rem;
-        padding: 1rem;
-        border-radius: 8px;
-        background: var(--jungle-secondary);
-        color: white;
+        font-size: 1.4rem;
         text-align: center;
-    }
-
-    .feedback.success {
-        background: var(--jungle-primary);
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+        border-radius: 12px;
+        background: var(--jungle-light);
+        line-height: 1.6;
     }
 
     .success {
         margin-top: 2rem;
-        padding: 1.5rem;
+        padding: 2rem;
         background: var(--jungle-light);
         border-radius: 16px;
         text-align: center;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    .success-text {
+        font-size: 1.4rem;
+        margin: 1rem 0;
+        color: var(--jungle-text);
+    }
+
+    .score-text {
+        font-size: 1.4rem;
+        color: var(--jungle-primary);
+        font-weight: bold;
+        margin: 1rem 0;
     }
 
     .wiki-info {
+        margin-top: 2rem;
+        padding: 1.5rem;
         background: white;
-        border-radius: 8px;
-        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .wiki-info p {
+        font-size: 1.4rem;
+        line-height: 1.6;
+        color: var(--jungle-text);
+    }
+
+    .loading-info {
+        font-size: 1.2rem;
+        color: var(--jungle-text);
+        opacity: 0.8;
         margin-top: 1rem;
-        font-size: 1rem;
-        line-height: 1.5;
+    }
+
+    .error-message {
+        font-size: 1.2rem;
+        color: #d32f2f;
+        text-align: center;
+        margin: 1rem 0;
+        padding: 1rem;
+        background: rgba(211, 47, 47, 0.1);
+        border-radius: 8px;
     }
 
     .countdown-container {
@@ -774,46 +780,24 @@
         z-index: 100;
         text-align: center;
         min-width: 200px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .countdown-text {
+        font-size: 1.4rem;
+        margin: 1rem 0;
     }
 
     .countdown-number {
-        font-size: 3rem;
+        font-size: 2.4rem;
         font-weight: bold;
         color: var(--jungle-primary);
         background: white;
         width: 80px;
         height: 80px;
+        line-height: 80px;
         border-radius: 50%;
         margin: 1rem auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .countdown-text {
-        font-size: 1.4rem;
-        margin: 0;
-    }
-
-    .player-welcome {
-        font-size: 1.2rem;
-        color: var(--jungle-text);
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .error-message {
-        color: #dc3545;
-        background: #ffe6e6;
-        padding: 0.8rem;
-        border-radius: 8px;
-        margin-top: 1rem;
-    }
-
-    .loading-info {
-        font-size: 0.9rem;
-        opacity: 0.7;
-        margin-top: 1rem;
     }
 
     @media (max-width: 1024px) {
@@ -828,17 +812,18 @@
 
         .animal-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
         }
     }
 
     @media (max-width: 768px) {
         .wordle-mode {
-            padding: 1rem;
+            padding: 1.5rem;
             margin: 1rem;
         }
 
         .main-game {
-            padding: 1rem;
+            padding: 1.5rem;
         }
 
         .grid {
@@ -853,23 +838,37 @@
         .name-generator {
             width: 100%;
         }
-    }
 
-    @media (max-width: 480px) {
         .animal-grid {
             grid-template-columns: 1fr;
         }
 
+        .animal-button {
+            font-size: 1.4rem;
+            padding: 1rem;
+        }
+
+        .wiki-info {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
         .grid {
             max-width: 280px;
         }
 
         h1 {
-            font-size: 1.8rem;
+            font-size: 2.4rem;
         }
 
         .welcome-box h2 {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
+        }
+
+        .countdown-container {
+            width: 90%;
+            max-width: 300px;
         }
     }
 </style>
