@@ -26,6 +26,11 @@
 	let attempts = 0;
 	let showHint = false;
 	let hintText = '';
+	let showSuggestions = false;
+	let suggestions = [];
+	let currentSuggestion = '';
+	let autoFillEnabled = true;
+	let showAutoFillInfo = false;
 
 	// Schwierigkeitskonfiguration
 	let rows = 3;
@@ -314,6 +319,57 @@
 		return hints[Math.min(attempts - 1, hints.length - 1)];
 	}
 
+	function getSuggestions(input) {
+		if (!input) return [];
+		const inputLower = input.toLowerCase();
+		return animalList
+			.map(a => a.name)
+			.filter(name => 
+				name.toLowerCase().includes(inputLower) || 
+				name.toLowerCase().startsWith(inputLower)
+			)
+			.slice(0, 5);
+	}
+
+	function toggleAutoFill() {
+		autoFillEnabled = !autoFillEnabled;
+		if (!autoFillEnabled) {
+			showSuggestions = false;
+		}
+	}
+
+	function handleInput(event) {
+		const value = event.target.value;
+		guessedName = value;
+		if (autoFillEnabled) {
+			suggestions = getSuggestions(value);
+			showSuggestions = suggestions.length > 0;
+		}
+	}
+
+	function selectSuggestion(suggestion) {
+		guessedName = suggestion;
+		showSuggestions = false;
+		guessedNameInput?.focus();
+	}
+
+	function handleKeydown(event) {
+		if (event.key === 'ArrowDown' && showSuggestions) {
+			event.preventDefault();
+			const currentIndex = suggestions.indexOf(currentSuggestion);
+			currentSuggestion = suggestions[(currentIndex + 1) % suggestions.length] || suggestions[0];
+		} else if (event.key === 'ArrowUp' && showSuggestions) {
+			event.preventDefault();
+			const currentIndex = suggestions.indexOf(currentSuggestion);
+			currentSuggestion = suggestions[currentIndex - 1] || suggestions[suggestions.length - 1];
+		} else if (event.key === 'Enter' && currentSuggestion) {
+			event.preventDefault();
+			selectSuggestion(currentSuggestion);
+		} else if (event.key === 'Escape') {
+			showSuggestions = false;
+		}
+	}
+
 	function checkGuess(e) {
 		e.preventDefault();
 		if (!guessedName.trim()) return;
@@ -437,51 +493,143 @@
 			<button class="safari-button" on:click={startGame}> Auf zur Safari! 🦁 </button>
 		</div>
 	{:else}
-		<p class="player-welcome">Los geht's, {playerName}!</p>
-		<div class="score-display">Aktuelle Punktzahl: {calculateScore()}</div>
-
-		{#if showHint && hintText}
-			<div class="hint-box">
-				<p class="hint-text">🌟 Tipp: {hintText}</p>
+		<div class="game-container">
+			<div class="autofill-control">
+				<button 
+					class="autofill-toggle {autoFillEnabled ? 'active' : ''}"
+					on:click={toggleAutoFill}
+					on:mouseenter={() => showAutoFillInfo = true}
+					on:mouseleave={() => showAutoFillInfo = false}
+				>
+					{#if autoFillEnabled}
+						<span class="toggle-icon">🎯</span>
+						Vorschläge An
+					{:else}
+						<span class="toggle-icon">🎲</span>
+						Vorschläge Aus
+					{/if}
+				</button>
+				{#if showAutoFillInfo}
+					<div class="autofill-info">
+						<p>
+							{#if autoFillEnabled}
+								Tiernamen werden automatisch vorgeschlagen, während du tippst! 🦁
+							{:else}
+								Keine automatischen Vorschläge - rate selbst! 🤔
+							{/if}
+						</p>
+					</div>
+				{/if}
 			</div>
-		{/if}
 
-		<div class="input-container">
-			<form on:submit={checkGuess}>
-				<label for="guessed-name">Welches Tier ist das?</label>
-				<input
-					id="guessed-name"
-					type="text"
-					bind:value={guessedName}
-					bind:this={guessedNameInput}
-					placeholder="Tiername eingeben..."
-					required
-				/>
-				<button type="submit">Prüfen</button>
-			</form>
-		</div>
+			<div class="player-info">
+				<div class="player-avatar">
+					{#if playerName}
+						<span class="avatar-text">{playerName[0].toUpperCase()}</span>
+					{/if}
+				</div>
+				<div class="player-name">
+					<span class="welcome-text">Hallo, {playerName}!</span>
+					<span class="mission-text">Finde das Nationaltier von {country}</span>
+				</div>
+			</div>
 
-		<div class="counter-box">
-			<p>Aufgedeckte Kacheln: {counter}/{rows * cols}</p>
-		</div>
+			<div class="game-status">
+				<div class="status-item score">
+					<span class="status-label">🎯 Punktzahl</span>
+					<span class="status-value">{calculateScore()}</span>
+				</div>
+				<div class="status-item tiles">
+					<span class="status-label">🧩 Kacheln</span>
+					<span class="status-value">{counter}/{rows * cols}</span>
+				</div>
+			</div>
 
-		<div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
-			{#each revealedTiles as revealed, index}
-				<button class="tile {revealed ? 'revealed' : ''}" on:click={() => revealTile(index)} aria-label="Tile" role="button"></button>
-			{/each}
+			{#if showHint && hintText}
+				<div class="hint-box">
+					<div class="hint-icon">💡</div>
+					<p class="hint-text">{hintText}</p>
+				</div>
+			{/if}
+
+			<div class="grid-container">
+				<div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
+					{#each revealedTiles as revealed, index}
+						<button 
+							class="tile {revealed ? 'revealed' : ''}" 
+							on:click={() => revealTile(index)} 
+							aria-label="Tile" 
+							role="button"
+						>
+							{#if !revealed}
+								<span class="tile-number">{index + 1}</span>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<div class="guess-container">
+				<form on:submit={checkGuess} class="guess-form">
+					<label for="guessed-name">
+						<span class="guess-label">🤔 Welches Tier ist das?</span>
+					</label>
+					<div class="input-group">
+						<div class="input-wrapper">
+							<input
+								id="guessed-name"
+								type="text"
+								bind:value={guessedName}
+								bind:this={guessedNameInput}
+								placeholder="Tiername eingeben..."
+								class="guess-input"
+								on:input={handleInput}
+								on:keydown={handleKeydown}
+								autocomplete="off"
+								required
+							/>
+							{#if showSuggestions && suggestions.length > 0}
+								<div class="suggestions-container">
+									{#each suggestions as suggestion}
+										<button
+											type="button"
+											class="suggestion-item {suggestion === currentSuggestion ? 'active' : ''}"
+											on:click={() => selectSuggestion(suggestion)}
+										>
+											{suggestion}
+										</button>
+									{/each}
+								</div>
+							{/if}
+						</div>
+						<button type="submit" class="guess-button">
+							Prüfen! 🔍
+						</button>
+					</div>
+				</form>
+			</div>
 		</div>
 
 		{#if isCorrect}
 			<div class="success">
-				<p>Super gemacht {playerName}! Das Tier ist ein {animal}, das Nationaltier von {country}.</p>
-				<p>Punktzahl: {calculateScore()}</p>
+				<div class="success-header">
+					<h3>🎉 Super gemacht {playerName}! 🎉</h3>
+					<p class="success-text">Das Tier ist ein {animal}, das Nationaltier von {country}.</p>
+					<div class="final-score">
+						<span class="score-label">Deine Punktzahl:</span>
+						<span class="score-value">{calculateScore()}</span>
+					</div>
+				</div>
 				{#if wikiInfo}
 					<div class="wiki-info">
-						<h4>Wissenswertes aus Wikipedia:</h4>
+						<h4>📚 Wissenswertes:</h4>
 						<p>{wikiInfo}</p>
 					</div>
 				{:else}
-					<div class="loading-info">Lade interessante Fakten...</div>
+					<div class="loading-info">
+						<div class="loading-spinner"></div>
+						<p>Lade spannende Fakten...</p>
+					</div>
 				{/if}
 			</div>
 		{/if}
@@ -680,41 +828,412 @@
 		padding-left: 2rem;
 	}
 
+	.game-container {
+		background: linear-gradient(145deg, #ffffff, #f0f0f0);
+		border-radius: 25px;
+		padding: 2rem;
+		margin: 2rem auto;
+		max-width: 800px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+	}
+
+	.autofill-control {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		margin-bottom: 1.5rem;
+	}
+
+	.autofill-toggle {
+		background: var(--jungle-light);
+		border: 3px solid var(--jungle-primary);
+		border-radius: 12px;
+		padding: 0.8rem 1.5rem;
+		font-size: 1.4rem;
+		color: var(--jungle-primary);
+		cursor: pointer;
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+	}
+
+	.autofill-toggle.active {
+		background: var(--jungle-primary);
+		color: white;
+	}
+
+	.toggle-icon {
+		font-size: 1.6rem;
+	}
+
+	.autofill-info {
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		background: white;
+		border: 3px solid var(--jungle-primary);
+		border-radius: 12px;
+		padding: 1rem;
+		margin-top: 0.5rem;
+		width: max-content;
+		max-width: 300px;
+		z-index: 1000;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	.autofill-info p {
+		font-size: 1.2rem;
+		color: var(--jungle-text);
+		margin: 0;
+		text-align: center;
+	}
+
+	.autofill-info::before {
+		content: '';
+		position: absolute;
+		top: -8px;
+		left: 50%;
+		transform: translateX(-50%);
+		border-left: 8px solid transparent;
+		border-right: 8px solid transparent;
+		border-bottom: 8px solid var(--jungle-primary);
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translate(-50%, -10px); }
+		to { opacity: 1; transform: translate(-50%, 0); }
+	}
+
+	.player-info {
+		background: var(--jungle-primary);
+		color: white;
+		padding: 1.5rem;
+		border-radius: 20px;
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		margin-bottom: 2rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.player-avatar {
+		width: 60px;
+		height: 60px;
+		background: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2.4rem;
+		font-weight: bold;
+		color: var(--jungle-primary);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.player-name {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.welcome-text {
+		font-size: 1.8rem;
+		font-weight: bold;
+	}
+
+	.mission-text {
+		font-size: 1.4rem;
+		opacity: 0.9;
+	}
+
+	.input-wrapper {
+		position: relative;
+		flex: 1;
+	}
+
+	.suggestions-container {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		background: white;
+		border: 4px solid var(--jungle-primary);
+		border-top: none;
+		border-radius: 0 0 15px 15px;
+		overflow: hidden;
+		z-index: 1000;
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+	}
+
+	.suggestion-item {
+		width: 100%;
+		padding: 1.2rem;
+		border: none;
+		background: none;
+		text-align: left;
+		font-size: 1.4rem;
+		color: var(--jungle-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.suggestion-item:hover,
+	.suggestion-item.active {
+		background: var(--jungle-light);
+		color: var(--jungle-primary);
+	}
+
+	.suggestion-item:not(:last-child) {
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	.game-status {
+		display: flex;
+		justify-content: center;
+		gap: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	.status-item {
+		background: var(--jungle-primary);
+		color: white;
+		padding: 1rem 2rem;
+		border-radius: 15px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 150px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		transform: scale(1);
+		transition: transform 0.3s ease;
+	}
+
+	.status-item:hover {
+		transform: scale(1.05);
+	}
+
+	.status-label {
+		font-size: 1.4rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.status-value {
+		font-size: 2rem;
+		font-weight: bold;
+	}
+
+	.grid-container {
+		position: relative;
+		padding: 1rem;
+		background: white;
+		border-radius: 25px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+		margin: 2rem auto;
+	}
+
 	.grid {
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(var(--cols), 1fr);
 		width: min(90vw, 500px);
 		height: min(90vw, 500px);
-		margin: 30px auto;
+		margin: 0 auto;
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
-		border: 6px solid var(--jungle-primary);
-		border-radius: 20px;
+		border: 8px solid var(--jungle-primary);
+		border-radius: 25px;
 		overflow: hidden;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-		z-index: 3;
+		box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
 	}
 
 	.tile {
-		background: rgba(0, 0, 0, 0.9);
+		background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
 		cursor: pointer;
 		transition: all 0.4s ease;
-		border: 2px solid rgba(255, 255, 255, 0.1);
+		border: 3px solid rgba(255, 255, 255, 0.1);
 		position: relative;
-		z-index: 4;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.tile-number {
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 1.8rem;
+		font-weight: bold;
 	}
 
 	.tile:hover {
-		background: rgba(0, 0, 0, 0.7);
-		transform: scale(0.98);
+		background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+		transform: scale(0.97);
 	}
 
 	.tile.revealed {
 		background: transparent;
 		pointer-events: none;
 		border: none;
+		animation: revealTile 0.5s ease-out;
+	}
+
+	@keyframes revealTile {
+		0% { transform: rotateY(0deg); opacity: 1; }
+		50% { transform: rotateY(90deg); opacity: 0.5; }
+		100% { transform: rotateY(180deg); opacity: 0; }
+	}
+
+	.guess-container {
+		margin-top: 2rem;
+	}
+
+	.guess-form {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.guess-label {
+		font-size: 1.8rem;
+		color: var(--jungle-primary);
+		font-weight: bold;
+		margin-bottom: 1rem;
+		display: block;
+		text-align: center;
+	}
+
+	.input-group {
+		display: flex;
+		gap: 1rem;
+		width: 100%;
+		max-width: 600px;
+	}
+
+	.guess-input {
+		flex: 1;
+		padding: 1.5rem;
+		font-size: 1.6rem;
+		border: 4px solid var(--jungle-primary);
+		border-radius: 15px;
+		background: white;
+		transition: all 0.3s ease;
+	}
+
+	.guess-input:focus {
+		box-shadow: 0 0 0 4px rgba(var(--jungle-primary-rgb), 0.3);
+		outline: none;
+	}
+
+	.guess-button {
+		padding: 1.5rem 3rem;
+		font-size: 1.6rem;
+		background: var(--jungle-primary);
+		color: white;
+		border: none;
+		border-radius: 15px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.guess-button:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+	}
+
+	.guess-button:active {
+		transform: translateY(1px);
+	}
+
+	.hint-box {
+		background: linear-gradient(145deg, #fff9c4, #fff59d);
+		border-radius: 20px;
+		padding: 1.5rem;
+		margin: 1.5rem auto;
+		max-width: 600px;
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		animation: float 3s ease-in-out infinite;
+	}
+
+	.hint-icon {
+		font-size: 2.5rem;
+	}
+
+	.hint-text {
+		font-size: 1.6rem;
+		color: var(--jungle-text);
+		line-height: 1.4;
+		flex: 1;
+	}
+
+	.success {
+		background: linear-gradient(145deg, #81c784, #66bb6a);
+		border-radius: 25px;
+		padding: 2.5rem;
+		margin-top: 2rem;
+		text-align: center;
+		color: white;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+	}
+
+	.success-header {
+		margin-bottom: 2rem;
+	}
+
+	.success-header h3 {
+		font-size: 2.4rem;
+		margin-bottom: 1rem;
+	}
+
+	.success-text {
+		font-size: 1.8rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.final-score {
+		background: white;
+		color: var(--jungle-primary);
+		display: inline-flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 2rem;
+		border-radius: 15px;
+		font-size: 1.8rem;
+		font-weight: bold;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.loading-info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 2rem;
+	}
+
+	.loading-spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid rgba(255, 255, 255, 0.3);
+		border-radius: 50%;
+		border-top-color: white;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
+	}
+
+	@keyframes float {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(-6px); }
 	}
 
 	.countdown-container {
@@ -750,73 +1269,6 @@
 		margin: 1.5rem auto;
 	}
 
-	.success {
-		background: linear-gradient(145deg, #e6ffe6, #ccffcc);
-		border-radius: 20px;
-		padding: 2rem;
-		margin-top: 2rem;
-		text-align: center;
-		border: 4px solid var(--jungle-primary);
-		position: relative;
-		z-index: 4;
-	}
-
-	.success p {
-		font-size: 1.6rem;
-		color: var(--jungle-text);
-		margin-bottom: 1rem;
-		line-height: 1.6;
-	}
-
-	.wiki-info {
-		background: white;
-		border-radius: 15px;
-		padding: 1.5rem;
-		margin-top: 1.5rem;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-	}
-
-	.wiki-info h4 {
-		color: var(--jungle-primary);
-		margin-bottom: 1rem;
-		font-size: 1.6rem;
-	}
-
-	.wiki-info p {
-		font-size: 1.4rem;
-		line-height: 1.6;
-	}
-
-	.loading-info {
-		font-size: 1.2rem;
-		opacity: 0.8;
-		margin-top: 1rem;
-	}
-
-	.hint-box {
-		background: linear-gradient(145deg, #fff3e0, #ffe0b2);
-		border-radius: 15px;
-		padding: 1.5rem;
-		margin: 1.5rem auto;
-		max-width: 500px;
-		text-align: center;
-		border: 4px solid var(--jungle-secondary);
-		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-		animation: pulse 2s infinite;
-	}
-
-	.hint-text {
-		font-size: 1.6rem;
-		color: var(--jungle-text);
-		line-height: 1.4;
-	}
-
-	@keyframes pulse {
-		0% { transform: scale(1); }
-		50% { transform: scale(1.02); }
-		100% { transform: scale(1); }
-	}
-
 	@media (max-width: 768px) {
 		.puzzle-mode {
 			padding: 20px;
@@ -840,16 +1292,45 @@
 			padding: 1.2rem;
 		}
 
-		.wiki-info {
-			padding: 1.2rem;
+		.game-container {
+			padding: 1rem;
+			margin: 1rem;
 		}
-		
-		.wiki-info h4 {
-			font-size: 1.4rem;
+
+		.game-status {
+			flex-direction: column;
+			align-items: center;
+			gap: 1rem;
 		}
-		
-	.wiki-info p {
-			font-size: 1.2rem;
+
+		.status-item {
+			width: 100%;
+			max-width: 300px;
+		}
+
+		.input-group {
+			flex-direction: column;
+		}
+
+		.guess-button {
+			width: 100%;
+		}
+
+		.success {
+			padding: 1.5rem;
+		}
+
+		.success-header h3 {
+			font-size: 2rem;
+		}
+
+		.success-text {
+			font-size: 1.6rem;
+		}
+
+		.final-score {
+			font-size: 1.6rem;
+			padding: 0.8rem 1.5rem;
 		}
 
 		.countdown-container {
@@ -864,6 +1345,34 @@
 			font-size: 3rem;
 			width: 80px;
 			height: 80px;
+		}
+
+		.player-info {
+			flex-direction: column;
+			text-align: center;
+			padding: 1rem;
+		}
+
+		.player-name {
+			align-items: center;
+		}
+
+		.welcome-text {
+			font-size: 1.6rem;
+		}
+
+		.mission-text {
+			font-size: 1.2rem;
+		}
+
+		.autofill-toggle {
+			font-size: 1.2rem;
+			padding: 0.6rem 1.2rem;
+		}
+
+		.autofill-info {
+			max-width: 250px;
+			font-size: 1.1rem;
 		}
 	}
 </style>
