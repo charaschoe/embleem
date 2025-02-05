@@ -75,6 +75,10 @@
 		}
 	}
 
+	$: if (imageUrl) {
+		document.documentElement.style.setProperty('--puzzle-image', `url(${imageUrl})`);
+	}
+
 	const placeholderNames = [
 		'Kleiner Panda',
 		'Süße Giraffe',
@@ -118,14 +122,14 @@
 		// Check API availability when component mounts
 		await checkApiAvailability();
 
-		const currentAnimal = animalList.find(a => a.name === animal);
+		const currentAnimal = animalList.find((a) => a.name === animal);
 		if (!currentAnimal) {
 			console.error('Animal not found:', animal);
 			return;
 		}
 
 		hint = getAnimalHint(currentAnimal);
-		
+
 		const loadImage = async (url) => {
 			try {
 				const img = new Image();
@@ -165,17 +169,22 @@
 				}
 			} catch (unsplashError) {
 				console.warn('Unsplash image fetch failed:', unsplashError);
-				if (unsplashError.message?.includes('403') || unsplashError.message?.includes('Rate Limit')) {
+				if (
+					unsplashError.message?.includes('403') ||
+					unsplashError.message?.includes('Rate Limit')
+				) {
 					showApiLimitMessage = true;
 				}
 			}
 
 			// If both fail, show an error placeholder
-			imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
+			imageUrl =
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
 			guessedNameInput?.focus();
 		} catch (error) {
 			console.error('Error loading image:', error);
-			imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
+			imageUrl =
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
 			guessedNameInput?.focus();
 		}
 	});
@@ -186,7 +195,9 @@
 			return;
 		}
 		if (!isApiAvailable) {
-			alert('Das Spiel ist momentan aufgrund technischer Einschränkungen nicht verfügbar. Bitte versuche es später noch einmal.');
+			alert(
+				'Das Spiel ist momentan aufgrund technischer Einschränkungen nicht verfügbar. Bitte versuche es später noch einmal.'
+			);
 			return;
 		}
 		showGame = true;
@@ -237,35 +248,54 @@
 		hintText = '';
 
 		// Select a new random animal that's different from the current one
-		const currentIndex = animalList.findIndex(a => a.name === animal);
+		const currentIndex = animalList.findIndex((a) => a.name === animal);
 		let newIndex;
 		do {
 			newIndex = Math.floor(Math.random() * animalList.length);
 		} while (newIndex === currentIndex);
-		
+
 		const newAnimal = animalList[newIndex];
 		animal = newAnimal.name;
 		country = newAnimal.country;
 
 		// Load new image for the new animal
-		fetchUnsplashImage(newAnimal).then(newImageUrl => {
-			imageUrl = newImageUrl;
-		}).catch(error => {
-			console.error('Error loading new image:', error);
-			imageUrl = '/animals/default-animal.jpg';
-		});
+		getWikipediaImage(newAnimal.name)
+			.then(async (wikiImage) => {
+				if (wikiImage) {
+					const validImage = await loadImage(wikiImage);
+					if (validImage) {
+						imageUrl = validImage;
+						return;
+					}
+				}
+				// If Wikipedia fails, try Unsplash
+				return fetchUnsplashImage(newAnimal);
+			})
+			.then(async (unsplashImage) => {
+				if (unsplashImage) {
+					const validImage = await loadImage(unsplashImage);
+					if (validImage) {
+						imageUrl = validImage;
+					}
+				}
+			})
+			.catch((error) => {
+				console.error('Error loading new image:', error);
+				imageUrl =
+					'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
+			});
 	}
 
 	async function getWikipediaImage(animalName) {
 		try {
 			// Map animal names to their Wikipedia article titles
 			const wikiTitles = {
-				'Bundesadler': 'Bundeswappen_Deutschlands',
+				Bundesadler: 'Bundeswappen_Deutschlands',
 				'Doppelköpfiger Adler': 'Wappen_Albaniens',
 				'Weißer Adler': 'Wappen_Polens',
 				'Leo Belgicus': 'Wappen_Belgiens',
 				'Gallischer Hahn': 'Wappen_Frankreichs',
-				'Weißkopfseeadler': 'Wappen_der_Vereinigten_Staaten',
+				Weißkopfseeadler: 'Wappen_der_Vereinigten_Staaten',
 				'Chinesischer Drache': 'Chinesischer_Drache',
 				'Walisischer Drache': 'Wappen_von_Wales',
 				'Schottisches Einhorn': 'Royal_Coat_of_Arms_of_Scotland',
@@ -280,7 +310,7 @@
 
 			const searchTerm = wikiTitles[animalName] || animalName;
 			console.debug('Searching Wikipedia for:', searchTerm);
-			
+
 			// First try to get the image from the German Wikipedia
 			let response = await fetch(
 				`https://de.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages|images&format=json&pithumbsize=1024&origin=*`
@@ -289,16 +319,16 @@
 			let pages = data.query.pages;
 			let pageId = Object.keys(pages)[0];
 			let imageUrl = pages[pageId]?.thumbnail?.source;
-			
+
 			// If no German image, try English Wikipedia
 			if (!imageUrl) {
 				const englishTitles = {
-					'Bundesadler': 'Coat_of_arms_of_Germany',
+					Bundesadler: 'Coat_of_arms_of_Germany',
 					'Doppelköpfiger Adler': 'Coat_of_arms_of_Albania',
 					'Weißer Adler': 'Coat_of_arms_of_Poland',
 					'Leo Belgicus': 'Coat_of_arms_of_Belgium',
 					'Gallischer Hahn': 'Coat_of_arms_of_France',
-					'Weißkopfseeadler': 'Coat_of_arms_of_the_United_States',
+					Weißkopfseeadler: 'Coat_of_arms_of_the_United_States',
 					'Chinesischer Drache': 'Chinese_dragon',
 					'Walisischer Drache': 'Flag_of_Wales',
 					'Schottisches Einhorn': 'Royal_coat_of_arms_of_Scotland',
@@ -310,10 +340,10 @@
 					'Mexikanischer Adler': 'Coat_of_arms_of_Mexico',
 					'Sri-Lanka-Löwe': 'Coat_of_arms_of_Sri_Lanka'
 				};
-				
+
 				const englishTitle = englishTitles[animalName] || animalName;
 				console.debug('Trying English Wikipedia:', englishTitle);
-				
+
 				response = await fetch(
 					`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(englishTitle)}&prop=pageimages|images&format=json&pithumbsize=1024&origin=*`
 				);
@@ -325,12 +355,13 @@
 				// If still no image, try to get any image from the page
 				if (!imageUrl && pages[pageId]?.images) {
 					const images = pages[pageId].images;
-					const coatOfArmsImage = images.find(img => 
-						img.title.toLowerCase().includes('coat') || 
-						img.title.toLowerCase().includes('wappen') ||
-						img.title.toLowerCase().includes('emblem')
+					const coatOfArmsImage = images.find(
+						(img) =>
+							img.title.toLowerCase().includes('coat') ||
+							img.title.toLowerCase().includes('wappen') ||
+							img.title.toLowerCase().includes('emblem')
 					);
-					
+
 					if (coatOfArmsImage) {
 						const imgResponse = await fetch(
 							`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(coatOfArmsImage.title)}&prop=imageinfo&iiprop=url&format=json&origin=*`
@@ -342,7 +373,7 @@
 					}
 				}
 			}
-			
+
 			if (imageUrl) {
 				console.debug('Found Wikipedia image:', imageUrl);
 				return imageUrl;
@@ -363,7 +394,7 @@
 
 	async function showAnimalInfo() {
 		try {
-			const currentAnimal = animalList.find(a => a.name === animal);
+			const currentAnimal = animalList.find((a) => a.name === animal);
 			if (currentAnimal) {
 				wikiInfo = await getAnimalInfo(currentAnimal);
 			} else {
@@ -377,7 +408,7 @@
 
 	function getHint(currentAnimal) {
 		if (!currentAnimal) return '';
-		
+
 		const hints = [
 			`Dieses Tier ist ein Raubtier aus der Familie der Katzen.`,
 			`Es hat ein gestreiftes Fell mit orangener und schwarzer Farbe.`,
@@ -392,10 +423,10 @@
 		if (!input) return [];
 		const inputLower = input.toLowerCase();
 		return animalList
-			.map(a => a.name)
-			.filter(name => 
-				name.toLowerCase().includes(inputLower) || 
-				name.toLowerCase().startsWith(inputLower)
+			.map((a) => a.name)
+			.filter(
+				(name) =>
+					name.toLowerCase().includes(inputLower) || name.toLowerCase().startsWith(inputLower)
 			)
 			.slice(0, 5);
 	}
@@ -464,7 +495,7 @@
 			attempts++;
 			showHint = true;
 			hintText = getHint(currentAnimal);
-			
+
 			// Customize feedback based on the guess
 			let feedback = 'Das ist leider nicht richtig. ';
 			if (attempts === 1) {
@@ -474,7 +505,7 @@
 			} else {
 				feedback += 'Lass uns gemeinsam das Tier finden! 🤝';
 			}
-			
+
 			alert(feedback);
 			guessedName = '';
 			guessedNameInput?.focus();
@@ -498,14 +529,14 @@
 		<div class="api-limit-warning">
 			<h3>⚠️ Wichtiger Hinweis zur Bildanzeige</h3>
 			<p>
-				Momentan können einige Bilder aufgrund technischer Einschränkungen nicht geladen werden. 
-				Wir arbeiten daran, dies zu verbessern. Das Spiel ist trotzdem spielbar, aber einige Bilder 
+				Momentan können einige Bilder aufgrund technischer Einschränkungen nicht geladen werden. Wir
+				arbeiten daran, dies zu verbessern. Das Spiel ist trotzdem spielbar, aber einige Bilder
 				werden möglicherweise nicht korrekt angezeigt.
 			</p>
 			<div class="api-limit-details">
 				<p>
-					<strong>Tipp:</strong> Nutze die Hinweise und dein Wissen über Nationaltiere, 
-					auch wenn das Bild nicht verfügbar ist! 🦁
+					<strong>Tipp:</strong> Nutze die Hinweise und dein Wissen über Nationaltiere, auch wenn das
+					Bild nicht verfügbar ist! 🦁
 				</p>
 			</div>
 		</div>
@@ -570,11 +601,11 @@
 			</div>
 
 			<div class="autofill-control">
-				<button 
+				<button
 					class="autofill-toggle {autoFillEnabled ? 'active' : ''}"
 					on:click={toggleAutoFill}
-					on:mouseenter={() => showAutoFillInfo = true}
-					on:mouseleave={() => showAutoFillInfo = false}
+					on:mouseenter={() => (showAutoFillInfo = true)}
+					on:mouseleave={() => (showAutoFillInfo = false)}
 				>
 					{#if autoFillEnabled}
 						<span class="toggle-icon">🎯</span>
@@ -588,9 +619,11 @@
 					<div class="autofill-info">
 						<p>
 							{#if autoFillEnabled}
-								Während du tippst, werden dir passende Tiernamen vorgeschlagen. Das macht das Raten einfacher! 🦁
+								Während du tippst, werden dir passende Tiernamen vorgeschlagen. Das macht das Raten
+								einfacher! 🦁
 							{:else}
-								Du möchtest die Tiernamen selbst erraten? Keine Vorschläge werden angezeigt - eine echte Herausforderung! 🤔
+								Du möchtest die Tiernamen selbst erraten? Keine Vorschläge werden angezeigt - eine
+								echte Herausforderung! 🤔
 							{/if}
 						</p>
 					</div>
@@ -649,7 +682,14 @@
 						}}
 					>
 						{#if revealed}
-							<img src={imageUrl} alt="Tier-Puzzle Teil {i + 1}" style="object-position: {-100 * (i % cols)}% {-100 * Math.floor(i / cols)}%" />
+							<div
+								class="image-container"
+								style="
+									background-image: url({imageUrl}); 
+									background-position: {-100 * (i % cols)}% {-100 * Math.floor(i / cols)}%;
+									background-size: {cols * 100}% {rows * 100}%;
+								"
+							/>
 						{:else}
 							{i + 1}
 						{/if}
@@ -665,9 +705,7 @@
 						placeholder="Tiername eingeben..."
 						bind:this={guessedNameInput}
 					/>
-					<button on:click={checkGuess}>
-						Prüfen! 🔍
-					</button>
+					<button on:click={checkGuess}> Prüfen! 🔍 </button>
 				</div>
 			</div>
 		</div>
@@ -813,8 +851,13 @@
 	}
 
 	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-6px); }
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-6px);
+		}
 	}
 
 	.difficulty-box {
@@ -852,23 +895,29 @@
 		transition: all 0.3s ease;
 		min-width: 160px;
 		font-size: 1.4rem;
+		color: var(--jungle-primary);
+		font-weight: bold;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	.difficulty-button:hover {
 		transform: translateY(-4px);
 		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+		background: var(--jungle-light);
 	}
 
 	.difficulty-button.active {
 		background: var(--jungle-primary);
 		color: white;
 		transform: scale(1.05);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 	}
 
 	.difficulty-info {
 		font-size: 1.2rem;
 		margin-top: 0.8rem;
 		opacity: 0.9;
+		color: inherit;
 	}
 
 	.tutorial-box {
@@ -1077,11 +1126,27 @@
 
 	.grid-container {
 		display: grid;
-		gap: 4px;
 		width: 100%;
 		max-width: min(90vw, 600px);
 		margin: 0 auto;
 		aspect-ratio: 1;
+		background: var(--jungle-primary);
+		border-radius: 12px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.grid-container::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-image: var(--puzzle-image);
+		background-size: cover;
+		background-position: center;
+		z-index: 0;
 	}
 
 	.grid-container.easy {
@@ -1100,43 +1165,35 @@
 		position: relative;
 		width: 100%;
 		background: #1a1a1a;
-		border-radius: 8px;
+		border-radius: 4px;
 		overflow: hidden;
 		aspect-ratio: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-size: clamp(1rem, 4vw, 2rem);
-		color: #ffffff80;
+		color: #ffffff;
 		transition: all 0.3s ease;
-	}
-
-	.grid-item img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+		z-index: 1;
 	}
 
 	.grid-item.revealed {
-		transform: scale(1);
+		background: transparent;
 	}
 
 	.grid-item:not(.revealed) {
 		cursor: pointer;
+		background: #1a1a1a;
 	}
 
 	.grid-item:not(.revealed):hover {
 		background: #2a2a2a;
+		transform: scale(0.98);
 	}
 
 	@media (max-width: 768px) {
 		.grid-container {
 			max-width: 95vw;
-			gap: 2px;
-		}
-
-		.grid-item {
-			border-radius: 4px;
 		}
 	}
 
@@ -1155,7 +1212,7 @@
 		width: 100%;
 	}
 
-	input[type="text"] {
+	input[type='text'] {
 		flex: 1;
 		padding: 0.75rem;
 		border: 2px solid var(--jungle-primary);
@@ -1267,7 +1324,9 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.countdown-container {
@@ -1415,5 +1474,14 @@
 		.autofill-info p {
 			font-size: 1.4rem;
 		}
+	}
+
+	.image-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-repeat: no-repeat;
 	}
 </style>
