@@ -309,7 +309,7 @@ VITE_API_TIMEOUT=8000
 
 ## 📜 Projektkontext
 
-Entwickelt im Wintersemester 2023/24 bei Prof. Fabian Rauch ([@caitoor](https://github.com/caitoor)) an der HfG Schwäbisch Gmünd. Zielgruppe: Kinder von 6-8 Jahren.
+Entwickelt im Wintersemester 2024/25 bei Prof. Fabian Rauch ([@caitoor](https://github.com/caitoor)) an der HfG Schwäbisch Gmünd. Zielgruppe: Kinder von 6-8 Jahren.
 
 ## 🌐 Roadmap
 
