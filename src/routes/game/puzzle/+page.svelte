@@ -2,15 +2,19 @@
 	import { onMount } from 'svelte';
 	import PuzzleGrid from '../../../components/PuzzleGrid.svelte';
 	import { highscoreStore } from '../../../lib/highscoreStore.js';
-	import { animalList, fetchUnsplashImage } from '../../../lib/animalList.js';
+	import { animalList } from '../../../lib/animalList.js';
+	import { fetchUnsplashImage } from '../../../lib/unsplash';
+	import type { Animal } from '../../../lib/types';
 
-	let currentAnimal;
+	let currentAnimal: Animal | undefined;
 	let imageUrl = '';
 
 	onMount(async () => {
 		const randomIndex = Math.floor(Math.random() * animalList.length);
 		currentAnimal = animalList[randomIndex];
-		imageUrl = await fetchUnsplashImage(currentAnimal.searchTerms);
+		if (currentAnimal) {
+			imageUrl = await fetchUnsplashImage(currentAnimal);
+		}
 	});
 </script>
 

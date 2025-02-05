@@ -4,13 +4,42 @@ Ein interaktives Lernspiel für Kinder, entwickelt als Semesterprojekt im Kurs "
 ## 📁 Projektarchitektur & Technischer Stack  
 **Frontend**: SvelteKit mit TypeScript  
 **Styling**: CSS mit Jungle-Theme  
-**APIs**: Unsplash (Tierbilder) + FlagCDN (Länderflaggen)  
+**APIs**: 
+- Unsplash API für dynamische Tierbilder
+- Wikipedia API für Tier-Informationen
+- FlagCDN für Länderflaggen
+
 **Bibliotheken**:
-- `canvas-confetti` für Konfetti-Animationen
+- `canvas-confetti` für Erfolgs-Animationen
 - `axios` für HTTP-Anfragen
 - `dotenv` für Umgebungsvariablen
 - `express` für den Server
 - `svelte/store` für State Management
+
+### 🎨 Farbpalette & Theming
+```css
+--jungle-primary: #2e7d32    /* Hauptfarbe für wichtige Elemente */
+--jungle-secondary: #4caf50  /* Sekundärfarbe für Akzente */
+--jungle-light: #81c784     /* Helle Variante für Hintergründe */
+--jungle-dark: #1b5e20      /* Dunkle Variante für Kontraste */
+--jungle-accent: #ffd700    /* Goldakzente für Erfolge */
+--jungle-text: #2c3e50      /* Haupttextfarbe */
+--jungle-shadow: rgba(0, 0, 0, 0.2)  /* Schatten für Tiefeneffekt */
+```
+
+### 🔧 Technische Besonderheiten
+- **TypeScript Integration**: Vollständige Typisierung für bessere Entwicklererfahrung
+- **API-Fehlerbehandlung**: Mehrstufiges Fallback-System
+  1. Deutsche Wikipedia API
+  2. Englische Wikipedia API
+  3. Unsplash API
+  4. Lokale Fallback-Bilder
+- **Responsive Design**: Mobile-First Ansatz mit CSS Grid und Flexbox
+- **State Management**: Svelte Stores für reaktive Datenverwaltung
+- **Performance Optimierung**:
+  - Lazy Loading für Bilder
+  - Debounced API-Calls
+  - Lokales Caching von Highscores
 
 ### 📂 Projektstruktur
 ```
@@ -213,18 +242,62 @@ Alle Komponenten wurden für verschiedene Bildschirmgrößen optimiert:
 - **Effizientes State Management**: Optimierte Zustandsverwaltung
 - **API-Limitierung**: Kontrollierte Anfragen
 
-## 🚀 Installation  
+### API-Einschränkungen und Rate Limits
+- **Unsplash API Rate Limits**: 
+  - 50 Anfragen pro Stunde ([Unsplash API Dokumentation](https://unsplash.com/documentation#rate-limiting))
+  - Das Spiel zeigt automatisch eine Warnung an, wenn die Rate Limits erreicht sind
+  - Die Warnung verschwindet automatisch, wenn die Rate Limits zurückgesetzt werden
+  - Das Spiel bleibt spielbar, auch wenn keine Bilder geladen werden können
+  - Die Spielmodi sind deaktiviert, wenn die API nicht verfügbar ist, um eine bessere Benutzererfahrung zu gewährleisten
+
+## 🚀 Installation & Setup
+
+### Voraussetzungen
+- Node.js (v16 oder höher)
+- npm oder yarn
+- Git
+
+### Installation
 ```bash
-git clone https://github.com/username/tier-ratespiel.git
-cd tier-ratespiel
+# Repository klonen
+git clone https://github.com/charaschoe/embleem.git
+cd embleem
+
+# Abhängigkeiten installieren
 npm install
+
+# Entwicklungsserver starten
 npm run dev
 ```
 
-## ⚙️ Konfiguration  
-`.env`-Datei erstellen:  
+### ⚙️ Konfiguration
+Erstelle eine `.env`-Datei im Hauptverzeichnis:
 ```env
-VITE_UNSPLASH_ACCESS_KEY=ihr_key
+# API Keys
+VITE_UNSPLASH_ACCESS_KEY=dein_unsplash_key
+VITE_WIKIPEDIA_USER_AGENT=embleem/1.0
+
+# Entwicklungseinstellungen
+VITE_DEV_MODE=true
+VITE_API_TIMEOUT=8000
+```
+
+### 🧪 Tests ausführen
+```bash
+# Unit Tests
+npm run test
+
+# E2E Tests
+npm run test:e2e
+```
+
+### 📦 Build für Produktion
+```bash
+# Produktions-Build erstellen
+npm run build
+
+# Build lokal testen
+npm run preview
 ```
 
 ## 🎮 Spielmechanik  

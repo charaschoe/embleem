@@ -23,6 +23,8 @@
     let points = 100;
     let wikiInfo = '';
     let apiError = '';
+    let showApiLimitMessage = false;
+    let isApiAvailable = true;
 
     const placeholderNames = [
         // Niedliche Tiernamen
@@ -58,6 +60,10 @@
     function startGame() {
         if (!playerName.trim()) {
             alert('Bitte gib deinen Namen ein!');
+            return;
+        }
+        if (!isApiAvailable) {
+            alert('Das Spiel ist momentan aufgrund technischer Einschränkungen nicht verfügbar. Bitte versuche es später noch einmal.');
             return;
         }
         randomizedAnimalList = animalList.map(a => a.name);
@@ -159,7 +165,28 @@
         });
     }
 
+    async function checkApiAvailability() {
+        try {
+            // Try to fetch a test image from Unsplash
+            const testAnimal = animalList[0];
+            const response = await fetch(
+                `https://api.unsplash.com/photos/random?query=${encodeURIComponent(testAnimal.name)}%20national%20symbol&orientation=landscape&content_filter=high&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`
+            );
+            if (response.status === 403) {
+                throw new Error('API rate limit exceeded');
+            }
+            isApiAvailable = true;
+            showApiLimitMessage = false;
+        } catch (error) {
+            console.warn('API check failed:', error);
+            isApiAvailable = false;
+            showApiLimitMessage = true;
+        }
+    }
+
     onMount(async () => {
+        // Check API availability when component mounts
+        await checkApiAvailability();
         randomizedAnimalList = animalList.map(a => a.name);
         
         try {
@@ -289,6 +316,23 @@
 
 <div class="wordle-mode">
     <h1>Tier-Rätsel: Wordle-Modus</h1>
+
+    {#if showApiLimitMessage}
+        <div class="api-limit-warning">
+            <h3>⚠️ Wichtiger Hinweis zur Bildanzeige</h3>
+            <p>
+                Momentan können einige Bilder aufgrund technischer Einschränkungen nicht geladen werden. 
+                Wir arbeiten daran, dies zu verbessern. Das Spiel ist trotzdem spielbar, aber einige Bilder 
+                werden möglicherweise nicht korrekt angezeigt.
+            </p>
+            <div class="api-limit-details">
+                <p>
+                    <strong>Tipp:</strong> Nutze die Hinweise und dein Wissen über Nationaltiere, 
+                    auch wenn das Bild nicht verfügbar ist! 🦁
+                </p>
+            </div>
+        </div>
+    {/if}
 
     <p class="hint">Finde das Nationaltier von {country}! 🌍</p>
 
@@ -870,5 +914,45 @@
             width: 90%;
             max-width: 300px;
         }
+    }
+
+    .api-limit-warning {
+        background: #fff3cd;
+        border: 2px solid #ffeeba;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem auto 2rem;
+        text-align: center;
+        max-width: 800px;
+        animation: float 3s ease-in-out infinite;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .api-limit-warning h3 {
+        color: #856404;
+        margin-bottom: 1rem;
+        font-size: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .api-limit-warning p {
+        color: #856404;
+        font-size: 1.4rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    .api-limit-details {
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .api-limit-details p {
+        margin: 0;
     }
 </style>

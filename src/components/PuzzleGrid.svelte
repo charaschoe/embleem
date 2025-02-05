@@ -4,6 +4,8 @@
 	import { animalList } from '../lib/animalList.js';
 	import { getAnimalInfo } from '../lib/wikipedia.js';
 	import { highscoreStore } from '../lib/highscoreStore.js';
+	import { getAnimalHint } from '../lib/imageValidation';
+	import { fetchUnsplashImage } from '../lib/unsplash';
 
 	export let animal;
 	export let imageUrl;
@@ -18,7 +20,7 @@
 	let counter = 0;
 	let guessedNameInput;
 	let showGame = false;
-	let countdown = 4;
+	let countdown = 10;
 	let showCountdown = false;
 	let difficulty = 'medium';
 	let lastScore = null;
@@ -31,6 +33,8 @@
 	let currentSuggestion = '';
 	let autoFillEnabled = true;
 	let showAutoFillInfo = false;
+	let showApiLimitMessage = false;
+	let isApiAvailable = true;
 
 	// Schwierigkeitskonfiguration
 	let rows = 3;
@@ -96,9 +100,93 @@
 		return Math.max(0, points - tilePenalty);
 	}
 
+	async function checkApiAvailability() {
+		try {
+			// Try to fetch a test image from Unsplash
+			const testAnimal = animalList[0];
+			await fetchUnsplashImage(testAnimal);
+			isApiAvailable = true;
+			showApiLimitMessage = false;
+		} catch (error) {
+			console.warn('API check failed:', error);
+			isApiAvailable = false;
+			showApiLimitMessage = true;
+		}
+	}
+
+	onMount(async () => {
+		// Check API availability when component mounts
+		await checkApiAvailability();
+
+		const currentAnimal = animalList.find(a => a.name === animal);
+		if (!currentAnimal) {
+			console.error('Animal not found:', animal);
+			return;
+		}
+
+		hint = getAnimalHint(currentAnimal);
+		
+		const loadImage = async (url) => {
+			try {
+				const img = new Image();
+				await new Promise((resolve, reject) => {
+					img.onload = resolve;
+					img.onerror = reject;
+					img.src = url;
+				});
+				return url;
+			} catch {
+				return null;
+			}
+		};
+
+		try {
+			// Try Wikipedia first
+			const wikiImage = await getWikipediaImage(currentAnimal.name);
+			if (wikiImage) {
+				const validImage = await loadImage(wikiImage);
+				if (validImage) {
+					imageUrl = validImage;
+					guessedNameInput?.focus();
+					return;
+				}
+			}
+
+			// If Wikipedia fails, try Unsplash as backup
+			try {
+				const unsplashImage = await fetchUnsplashImage(currentAnimal);
+				if (unsplashImage) {
+					const validImage = await loadImage(unsplashImage);
+					if (validImage) {
+						imageUrl = validImage;
+						guessedNameInput?.focus();
+						return;
+					}
+				}
+			} catch (unsplashError) {
+				console.warn('Unsplash image fetch failed:', unsplashError);
+				if (unsplashError.message?.includes('403') || unsplashError.message?.includes('Rate Limit')) {
+					showApiLimitMessage = true;
+				}
+			}
+
+			// If both fail, show an error placeholder
+			imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
+			guessedNameInput?.focus();
+		} catch (error) {
+			console.error('Error loading image:', error);
+			imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png';
+			guessedNameInput?.focus();
+		}
+	});
+
 	function startGame() {
 		if (!playerName.trim()) {
 			alert('Bitte gib deinen Namen ein!');
+			return;
+		}
+		if (!isApiAvailable) {
+			alert('Das Spiel ist momentan aufgrund technischer Einschränkungen nicht verfügbar. Bitte versuche es später noch einmal.');
 			return;
 		}
 		showGame = true;
@@ -139,7 +227,7 @@
 
 	function resetGame() {
 		showCountdown = false;
-		countdown = 4;
+		countdown = 10;
 		isCorrect = false;
 		revealedTiles = Array(rows * cols).fill(false);
 		counter = 0;
@@ -147,35 +235,55 @@
 		attempts = 0;
 		showHint = false;
 		hintText = '';
+
+		// Select a new random animal that's different from the current one
+		const currentIndex = animalList.findIndex(a => a.name === animal);
+		let newIndex;
+		do {
+			newIndex = Math.floor(Math.random() * animalList.length);
+		} while (newIndex === currentIndex);
+		
+		const newAnimal = animalList[newIndex];
+		animal = newAnimal.name;
+		country = newAnimal.country;
+
+		// Load new image for the new animal
+		fetchUnsplashImage(newAnimal).then(newImageUrl => {
+			imageUrl = newImageUrl;
+		}).catch(error => {
+			console.error('Error loading new image:', error);
+			imageUrl = '/animals/default-animal.jpg';
+		});
 	}
 
 	async function getWikipediaImage(animalName) {
 		try {
 			// Map animal names to their Wikipedia article titles
 			const wikiTitles = {
-				'Bundesadler': 'Bundesadler_(Deutschland)',
-				'Doppelköpfiger Adler': 'Albanischer_Adler',
+				'Bundesadler': 'Bundeswappen_Deutschlands',
+				'Doppelköpfiger Adler': 'Wappen_Albaniens',
 				'Weißer Adler': 'Wappen_Polens',
-				'Leo Belgicus': 'Belgischer_Löwe',
-				'Gallischer Hahn': 'Gallischer_Hahn',
-				'Weißkopfseeadler': 'Weißkopfseeadler',
+				'Leo Belgicus': 'Wappen_Belgiens',
+				'Gallischer Hahn': 'Wappen_Frankreichs',
+				'Weißkopfseeadler': 'Wappen_der_Vereinigten_Staaten',
 				'Chinesischer Drache': 'Chinesischer_Drache',
-				'Walisischer Drache': 'Walisischer_Drache',
-				'Schottisches Einhorn': 'Einhorn',
+				'Walisischer Drache': 'Wappen_von_Wales',
+				'Schottisches Einhorn': 'Royal_Coat_of_Arms_of_Scotland',
 				'Norwegischer Löwe': 'Wappen_Norwegens',
 				'Singapur Merlion': 'Merlion',
 				'Schwedischer Löwe': 'Wappen_Schwedens',
-				'Tschechischer Löwe': 'Wappen_der_Tschechischen_Republik',
+				'Tschechischer Löwe': 'Wappen_Tschechiens',
 				'Finnischer Löwe': 'Wappen_Finnlands',
 				'Mexikanischer Adler': 'Wappen_Mexikos',
-				'Sri-Lanka-Löwe': 'Flagge_Sri_Lankas'
+				'Sri-Lanka-Löwe': 'Wappen_Sri_Lankas'
 			};
 
 			const searchTerm = wikiTitles[animalName] || animalName;
+			console.debug('Searching Wikipedia for:', searchTerm);
 			
 			// First try to get the image from the German Wikipedia
 			let response = await fetch(
-				`https://de.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages&format=json&pithumbsize=1024&origin=*`
+				`https://de.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(searchTerm)}&prop=pageimages|images&format=json&pithumbsize=1024&origin=*`
 			);
 			let data = await response.json();
 			let pages = data.query.pages;
@@ -186,34 +294,57 @@
 			if (!imageUrl) {
 				const englishTitles = {
 					'Bundesadler': 'Coat_of_arms_of_Germany',
-					'Doppelköpfiger Adler': 'Albanian_eagle',
+					'Doppelköpfiger Adler': 'Coat_of_arms_of_Albania',
 					'Weißer Adler': 'Coat_of_arms_of_Poland',
-					'Leo Belgicus': 'Belgian_Lion',
-					'Gallischer Hahn': 'Gallic_rooster',
-					'Weißkopfseeadler': 'Bald_eagle',
+					'Leo Belgicus': 'Coat_of_arms_of_Belgium',
+					'Gallischer Hahn': 'Coat_of_arms_of_France',
+					'Weißkopfseeadler': 'Coat_of_arms_of_the_United_States',
 					'Chinesischer Drache': 'Chinese_dragon',
-					'Walisischer Drache': 'Welsh_Dragon',
-					'Schottisches Einhorn': 'Unicorn#Scotland',
+					'Walisischer Drache': 'Flag_of_Wales',
+					'Schottisches Einhorn': 'Royal_coat_of_arms_of_Scotland',
 					'Norwegischer Löwe': 'Coat_of_arms_of_Norway',
 					'Singapur Merlion': 'Merlion',
 					'Schwedischer Löwe': 'Coat_of_arms_of_Sweden',
 					'Tschechischer Löwe': 'Coat_of_arms_of_the_Czech_Republic',
 					'Finnischer Löwe': 'Coat_of_arms_of_Finland',
 					'Mexikanischer Adler': 'Coat_of_arms_of_Mexico',
-					'Sri-Lanka-Löwe': 'Flag_of_Sri_Lanka'
+					'Sri-Lanka-Löwe': 'Coat_of_arms_of_Sri_Lanka'
 				};
 				
 				const englishTitle = englishTitles[animalName] || animalName;
+				console.debug('Trying English Wikipedia:', englishTitle);
+				
 				response = await fetch(
-					`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(englishTitle)}&prop=pageimages&format=json&pithumbsize=1024&origin=*`
+					`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(englishTitle)}&prop=pageimages|images&format=json&pithumbsize=1024&origin=*`
 				);
 				data = await response.json();
 				pages = data.query.pages;
 				pageId = Object.keys(pages)[0];
 				imageUrl = pages[pageId]?.thumbnail?.source;
+
+				// If still no image, try to get any image from the page
+				if (!imageUrl && pages[pageId]?.images) {
+					const images = pages[pageId].images;
+					const coatOfArmsImage = images.find(img => 
+						img.title.toLowerCase().includes('coat') || 
+						img.title.toLowerCase().includes('wappen') ||
+						img.title.toLowerCase().includes('emblem')
+					);
+					
+					if (coatOfArmsImage) {
+						const imgResponse = await fetch(
+							`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(coatOfArmsImage.title)}&prop=imageinfo&iiprop=url&format=json&origin=*`
+						);
+						const imgData = await imgResponse.json();
+						const imgPages = imgData.query.pages;
+						const imgPageId = Object.keys(imgPages)[0];
+						imageUrl = imgPages[imgPageId]?.imageinfo?.[0]?.url;
+					}
+				}
 			}
 			
 			if (imageUrl) {
+				console.debug('Found Wikipedia image:', imageUrl);
 				return imageUrl;
 			}
 			throw new Error('No image found');
@@ -222,68 +353,6 @@
 			return null;
 		}
 	}
-
-	onMount(async () => {
-		hint = 'Kannst du das Tier erraten? Decke die Kacheln auf!';
-		try {
-			// First try Wikipedia
-			const wikiImage = await getWikipediaImage(animal);
-			if (wikiImage) {
-				imageUrl = wikiImage;
-				guessedNameInput?.focus();
-				return;
-			}
-
-			// Fallback to Unsplash with more specific search terms
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-			const searchTerms = {
-				'Bengalischer Tiger': 'bengal tiger face closeup stripes',
-				'Andenkondor': 'andean condor bird',
-				'Weißkopfseeadler': 'bald eagle portrait',
-				'Komodo-Drache': 'komodo dragon lizard',
-				'Steppenzebra': 'plains zebra portrait',
-				'Känguru': 'red kangaroo portrait',
-				'Russischer Bär': 'brown bear portrait'
-			};
-
-			const searchQuery = searchTerms[animal] || `${animal} animal portrait closeup`;
-
-			const response = await fetch(
-				`https://api.unsplash.com/photos/random?query=${encodeURIComponent(searchQuery)}&orientation=landscape&content_filter=high&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
-				{ signal: controller.signal }
-			);
-
-			clearTimeout(timeoutId);
-			const data = await response.json();
-
-			// Verify if the image exists and has a valid URL
-			if (data?.urls?.regular) {
-				imageUrl = data.urls.regular;
-			} else {
-				throw new Error('Invalid image data');
-			}
-
-			guessedNameInput?.focus();
-		} catch (error) {
-			console.error('Error fetching image:', error);
-			// Use a more specific fallback path with proper error handling
-			try {
-				imageUrl = `/animals/${animal.toLowerCase().replace(/[\s-]/g, '-')}.jpg`;
-				// Test if the image exists
-				const img = new Image();
-				img.src = imageUrl;
-				await new Promise((resolve, reject) => {
-					img.onload = resolve;
-					img.onerror = reject;
-				});
-			} catch (fallbackError) {
-				console.error('Fallback image not found:', fallbackError);
-				imageUrl = '/animals/default-animal.jpg';
-			}
-		}
-	});
 
 	function revealTile(index) {
 		if (!revealedTiles[index]) {
@@ -425,6 +494,22 @@
 
 <div class="puzzle-mode">
 	<h1>Tier-Ratespiel</h1>
+	{#if showApiLimitMessage}
+		<div class="api-limit-warning">
+			<h3>⚠️ Wichtiger Hinweis zur Bildanzeige</h3>
+			<p>
+				Momentan können einige Bilder aufgrund technischer Einschränkungen nicht geladen werden. 
+				Wir arbeiten daran, dies zu verbessern. Das Spiel ist trotzdem spielbar, aber einige Bilder 
+				werden möglicherweise nicht korrekt angezeigt.
+			</p>
+			<div class="api-limit-details">
+				<p>
+					<strong>Tipp:</strong> Nutze die Hinweise und dein Wissen über Nationaltiere, 
+					auch wenn das Bild nicht verfügbar ist! 🦁
+				</p>
+			</div>
+		</div>
+	{/if}
 	<p class="hint">Finde das Nationaltier von {country}!</p>
 
 	{#if !showGame}
@@ -552,61 +637,38 @@
 				</div>
 			{/if}
 
-			<div class="grid-container">
-				<div class="grid" style="--cols: {cols}; background-image: url('{imageUrl}');">
-					{#each revealedTiles as revealed, index}
-						<button 
-							class="tile {revealed ? 'revealed' : ''}" 
-							on:click={() => revealTile(index)} 
-							aria-label="Tile" 
-							role="button"
-						>
-							{#if !revealed}
-								<span class="tile-number">{index + 1}</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
+			<div class="grid-container {difficulty}">
+				{#each revealedTiles as revealed, i}
+					<div
+						class="grid-item {revealed ? 'revealed' : ''}"
+						on:click={() => {
+							if (!revealed && !isCorrect) {
+								revealedTiles[i] = true;
+								counter++;
+							}
+						}}
+					>
+						{#if revealed}
+							<img src={imageUrl} alt="Tier-Puzzle Teil {i + 1}" style="object-position: {-100 * (i % cols)}% {-100 * Math.floor(i / cols)}%" />
+						{:else}
+							{i + 1}
+						{/if}
+					</div>
+				{/each}
 			</div>
 
-			<div class="guess-container">
-				<form on:submit={checkGuess} class="guess-form">
-					<label for="guessed-name">
-						<span class="guess-label">🤔 Welches Tier ist das?</span>
-					</label>
-					<div class="input-group">
-						<div class="input-wrapper">
-							<input
-								id="guessed-name"
-								type="text"
-								bind:value={guessedName}
-								bind:this={guessedNameInput}
-								placeholder="Tiername eingeben..."
-								class="guess-input"
-								on:input={handleInput}
-								on:keydown={handleKeydown}
-								autocomplete="off"
-								required
-							/>
-							{#if showSuggestions && suggestions.length > 0}
-								<div class="suggestions-container">
-									{#each suggestions as suggestion}
-										<button
-											type="button"
-											class="suggestion-item {suggestion === currentSuggestion ? 'active' : ''}"
-											on:click={() => selectSuggestion(suggestion)}
-										>
-											{suggestion}
-										</button>
-									{/each}
-								</div>
-							{/if}
-						</div>
-						<button type="submit" class="guess-button">
-							Prüfen! 🔍
-						</button>
-					</div>
-				</form>
+			<div class="game-controls">
+				<div class="input-container">
+					<input
+						type="text"
+						bind:value={guessedName}
+						placeholder="Tiername eingeben..."
+						bind:this={guessedNameInput}
+					/>
+					<button on:click={checkGuess}>
+						Prüfen! 🔍
+					</button>
+				</div>
 			</div>
 		</div>
 
@@ -1014,127 +1076,116 @@
 	}
 
 	.grid-container {
-		position: relative;
-		padding: 1rem;
-		background: white;
-		border-radius: 25px;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-		margin: 2rem auto;
-	}
-
-	.grid {
-		position: relative;
 		display: grid;
-		grid-template-columns: repeat(var(--cols), 1fr);
-		width: min(90vw, 500px);
-		height: min(90vw, 500px);
+		gap: 4px;
+		width: 100%;
+		max-width: min(90vw, 600px);
 		margin: 0 auto;
-		background-size: cover;
-		background-position: center;
-		background-repeat: no-repeat;
-		border: 8px solid var(--jungle-primary);
-		border-radius: 25px;
-		overflow: hidden;
-		box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+		aspect-ratio: 1;
 	}
 
-	.tile {
-		background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-		cursor: pointer;
-		transition: all 0.4s ease;
-		border: 3px solid rgba(255, 255, 255, 0.1);
+	.grid-container.easy {
+		grid-template-columns: repeat(4, 1fr);
+	}
+
+	.grid-container.medium {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.grid-container.hard {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.grid-item {
 		position: relative;
+		width: 100%;
+		background: #1a1a1a;
+		border-radius: 8px;
 		overflow: hidden;
+		aspect-ratio: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.tile-number {
-		color: rgba(255, 255, 255, 0.7);
-		font-size: 1.4rem;
-		font-weight: bold;
-	}
-
-	.tile:hover {
-		background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
-		transform: scale(0.97);
-	}
-
-	.tile.revealed {
-		background: transparent;
-		pointer-events: none;
-		border: none;
-		animation: revealTile 0.5s ease-out;
-	}
-
-	@keyframes revealTile {
-		0% { transform: rotateY(0deg); opacity: 1; }
-		50% { transform: rotateY(90deg); opacity: 0.5; }
-		100% { transform: rotateY(180deg); opacity: 0; }
-	}
-
-	.guess-container {
-		margin-top: 2rem;
-	}
-
-	.guess-form {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.guess-label {
-		font-size: 1.4rem;
-		color: var(--jungle-primary);
-		font-weight: bold;
-		margin-bottom: 1rem;
-		display: block;
-		text-align: center;
-	}
-
-	.input-group {
-		display: flex;
-		gap: 1rem;
-		width: 100%;
-		max-width: 600px;
-	}
-
-	.guess-input {
-		flex: 1;
-		padding: 1.5rem;
-		font-size: 1.4rem;
-		border: 4px solid var(--jungle-primary);
-		border-radius: 15px;
-		background: white;
+		font-size: clamp(1rem, 4vw, 2rem);
+		color: #ffffff80;
 		transition: all 0.3s ease;
 	}
 
-	.guess-input:focus {
-		box-shadow: 0 0 0 4px rgba(var(--jungle-primary-rgb), 0.3);
-		outline: none;
+	.grid-item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 
-	.guess-button {
-		padding: 1.5rem 3rem;
-		font-size: 1.4rem;
+	.grid-item.revealed {
+		transform: scale(1);
+	}
+
+	.grid-item:not(.revealed) {
+		cursor: pointer;
+	}
+
+	.grid-item:not(.revealed):hover {
+		background: #2a2a2a;
+	}
+
+	@media (max-width: 768px) {
+		.grid-container {
+			max-width: 95vw;
+			gap: 2px;
+		}
+
+		.grid-item {
+			border-radius: 4px;
+		}
+	}
+
+	.game-controls {
+		width: 100%;
+		max-width: min(90vw, 600px);
+		margin: 1rem auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.input-container {
+		display: flex;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	input[type="text"] {
+		flex: 1;
+		padding: 0.75rem;
+		border: 2px solid var(--jungle-primary);
+		border-radius: 8px;
+		font-size: 1rem;
+	}
+
+	button {
+		padding: 0.75rem 1.5rem;
 		background: var(--jungle-primary);
 		color: white;
 		border: none;
-		border-radius: 15px;
+		border-radius: 8px;
 		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		font-size: 1rem;
+		transition: background 0.3s ease;
 	}
 
-	.guess-button:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+	button:hover {
+		background: var(--jungle-dark);
 	}
 
-	.guess-button:active {
-		transform: translateY(1px);
+	@media (max-width: 480px) {
+		.input-container {
+			flex-direction: column;
+		}
+
+		button {
+			width: 100%;
+		}
 	}
 
 	.hint-box {
@@ -1219,11 +1270,6 @@
 		to { transform: rotate(360deg); }
 	}
 
-	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-6px); }
-	}
-
 	.countdown-container {
 		position: fixed;
 		top: 50%;
@@ -1257,42 +1303,43 @@
 		margin: 1.5rem auto;
 	}
 
-	@media (max-width: 768px) {
-		.puzzle-mode {
-			padding: 20px;
-			margin: 15px;
-		}
+	.api-limit-warning {
+		background: #fff3cd;
+		border: 2px solid #ffeeba;
+		border-radius: 15px;
+		padding: 1.5rem;
+		margin: 1rem auto 2rem;
+		text-align: center;
+		max-width: 800px;
+		animation: float 3s ease-in-out infinite;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
 
-		h1 {
-			font-size: 2.4rem;
-		}
+	.api-limit-warning h3 {
+		color: #856404;
+		margin-bottom: 1rem;
+		font-size: 1.6rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+	}
 
-		.hint {
-			font-size: 1.4rem;
-		}
+	.api-limit-warning p {
+		color: #856404;
+		font-size: 1.4rem;
+		line-height: 1.5;
+		margin-bottom: 1rem;
+	}
 
-		.name-input-container {
-			padding: 15px;
-			margin: 10px;
-			width: auto;
-		}
+	.api-limit-details {
+		background: rgba(255, 255, 255, 0.5);
+		border-radius: 10px;
+		padding: 1rem;
+		margin-top: 1rem;
+	}
 
-		.difficulty-button {
-			min-width: 140px;
-			padding: 1.2rem;
-		}
-
-		.game-container {
-			padding: 1rem;
-			margin: 1rem;
-		}
-
-		.game-status {
-			flex-direction: column;
-			align-items: center;
-			gap: 1rem;
-		}
-
+	.api-limit-details p {
 		.status-item {
 			width: 100%;
 			max-width: 300px;
