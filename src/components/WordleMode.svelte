@@ -176,11 +176,14 @@
 
 	async function checkApiAvailability() {
 		try {
-			// Try to fetch a test image from Unsplash
+			// Try to fetch a test image from Unsplash using secure API proxy
 			const testAnimal = animalList[0];
-			const response = await fetch(
-				`https://api.unsplash.com/photos/random?query=${encodeURIComponent(testAnimal.name)}%20national%20symbol&orientation=landscape&content_filter=high&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`
-			);
+			const url = new URL('/api/unsplash/random', window.location.origin);
+			url.searchParams.append('query', `${encodeURIComponent(testAnimal.name)} national symbol`);
+			url.searchParams.append('orientation', 'landscape');
+			url.searchParams.append('content_filter', 'high');
+
+			const response = await fetch(url.toString());
 			if (response.status === 403) {
 				throw new Error('API rate limit exceeded');
 			}
@@ -275,10 +278,14 @@
 			}
 
 			const searchQuery = searchTerms[correctAnimal] || `${correctAnimal} national symbol heraldic`;
-			const response = await fetch(
-				`https://api.unsplash.com/photos/random?query=${encodeURIComponent(searchQuery)}&orientation=landscape&content_filter=high&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
-				{ signal: controller.signal }
-			);
+
+			// Use secure API proxy instead of direct API call
+			const url = new URL('/api/unsplash/random', window.location.origin);
+			url.searchParams.append('query', encodeURIComponent(searchQuery));
+			url.searchParams.append('orientation', 'landscape');
+			url.searchParams.append('content_filter', 'high');
+
+			const response = await fetch(url.toString(), { signal: controller.signal });
 
 			clearTimeout(timeoutId);
 			const data = await response.json();
@@ -290,7 +297,13 @@
 			throw new Error('Image quality not sufficient');
 		} catch (error) {
 			console.error('Error fetching image:', error);
-			const fallbackPath = `/animals/${correctAnimal.toLowerCase().replace(/[\s-]/g, '-')}.jpg`;
+			// Sanitize the animal name to prevent path traversal attacks
+			const sanitizedName = correctAnimal
+				.replace(/[^a-zA-Z0-9\s-äöüßÄÖÜ]/g, '') // Remove potentially dangerous characters
+				.replace(/[\s-]+/g, '-') // Replace spaces and hyphens with single hyphen
+				.toLowerCase()
+				.substring(0, 50); // Limit length to prevent excessively long filenames
+			const fallbackPath = `/animals/${sanitizedName || 'default'}.jpg`;
 			try {
 				const img = new Image();
 				img.src = fallbackPath;

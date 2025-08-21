@@ -52,58 +52,69 @@
 		<div class="welcome-content">
 			<h1>Willkommen im Tier-Abenteuer! 🌟</h1>
 			<p class="intro-text">
-				Entdecke die faszinierende Welt der Nationaltiere! Teste dein Wissen und lerne spielerisch neue
-				Tiere kennen.
+				Entdecke die faszinierende Welt der Nationaltiere! Teste dein Wissen und lerne spielerisch
+				neue Tiere kennen.
 			</p>
 
 			{#if showApiLimitMessage}
 				<div class="api-limit-warning">
 					<h3>⚠️ Wichtiger Hinweis zur Bildanzeige</h3>
 					<p>
-						Momentan können einige Bilder aufgrund technischer Einschränkungen nicht geladen werden. 
-						Wir arbeiten daran, dies zu verbessern. Das Spiel ist trotzdem spielbar, aber einige Bilder 
-						werden möglicherweise nicht korrekt angezeigt.
+						Momentan können einige Bilder aufgrund technischer Einschränkungen nicht geladen werden.
+						Wir arbeiten daran, dies zu verbessern. Das Spiel ist trotzdem spielbar, aber einige
+						Bilder werden möglicherweise nicht korrekt angezeigt.
 					</p>
 					<div class="api-limit-details">
 						<p>
-							<strong>Info:</strong> Aufgrund der API-Beschränkungen von Unsplash sind nur 50 Bildanfragen pro Stunde möglich.
-							Die Bildanzeige wird automatisch wiederhergestellt, sobald das Limit zurückgesetzt wird.
+							<strong>Info:</strong> Aufgrund der API-Beschränkungen von Unsplash sind nur 50 Bildanfragen
+							pro Stunde möglich. Die Bildanzeige wird automatisch wiederhergestellt, sobald das Limit
+							zurückgesetzt wird.
 						</p>
 						<p>
-							<strong>Tipp:</strong> Nutze die Hinweise und dein Wissen über Nationaltiere, 
-							auch wenn das Bild nicht verfügbar ist! 🦁
+							<strong>Tipp:</strong> Nutze die Hinweise und dein Wissen über Nationaltiere, auch wenn
+							das Bild nicht verfügbar ist! 🦁
 						</p>
 					</div>
 				</div>
 			{/if}
 
-			<button class="start-button" on:click={() => goto('/game/puzzle')}> Abenteuer starten! 🚀 </button>
+			<button class="start-button" on:click={() => goto('/game/puzzle')}>
+				Abenteuer starten! 🚀
+			</button>
 			<p class="button-info">Starte deine Entdeckungsreise im Puzzle-Modus</p>
 
 			<div class="divider"></div>
 
 			<h2>Wähle deinen Spielmodus 🎮</h2>
 			<div class="modes-grid">
-				<button class="mode" on:click={() => goto('/game/puzzle')} disabled={!isApiAvailable || apiState.isLoading}>
+				<button
+					class="mode"
+					on:click={() => goto('/game/puzzle')}
+					disabled={!isApiAvailable || apiState.isLoading}
+				>
 					<span class="mode-icon">🧩</span>
 					<div class="mode-content">
 						<h3>Puzzle-Modus</h3>
 						<p>
-							Der perfekte Modus für alle Entdecker! Decke die versteckten Tiere Stück für Stück auf und
-							rate, welches Nationaltier sich dahinter verbirgt.
+							Der perfekte Modus für alle Entdecker! Decke die versteckten Tiere Stück für Stück auf
+							und rate, welches Nationaltier sich dahinter verbirgt.
 						</p>
 						{#if apiState.hasError}
 							<p class="mode-warning">⚠️ Momentan nicht verfügbar</p>
 						{/if}
 					</div>
 				</button>
-				<button class="mode" on:click={() => goto('/game/wordle')} disabled={!isApiAvailable || apiState.isLoading}>
+				<button
+					class="mode"
+					on:click={() => goto('/game/wordle')}
+					disabled={!isApiAvailable || apiState.isLoading}
+				>
 					<span class="mode-icon">🎯</span>
 					<div class="mode-content">
 						<h3>Wordle-Modus</h3>
 						<p>
-							Der ideale Einstieg für junge Entdecker! Rate Tiernamen mit Hilfe von bunten Hinweisen -
-							einfach und intuitiv ohne Tastatur.
+							Der ideale Einstieg für junge Entdecker! Rate Tiernamen mit Hilfe von bunten Hinweisen
+							- einfach und intuitiv ohne Tastatur.
 						</p>
 						{#if apiState.hasError}
 							<p class="mode-warning">⚠️ Momentan nicht verfügbar</p>

@@ -104,7 +104,10 @@
 							<td>{score.animal}</td>
 							<td>{score.mode === 'Puzzle' ? 'Puzzle-Modus' : 'Wordle-Modus'}</td>
 							<td class="score">{score.score} ⭐</td>
-							<td>{score.attempts || score.tiles} {score.mode === 'Puzzle' ? 'Kacheln' : 'Versuche'}</td>
+							<td
+								>{score.attempts || score.tiles}
+								{score.mode === 'Puzzle' ? 'Kacheln' : 'Versuche'}</td
+							>
 							<td>{new Date(score.date).toLocaleDateString('de-DE')}</td>
 						</tr>
 					{/each}
@@ -115,7 +118,9 @@
 		<div class="empty-state">
 			<h2>🦁 Werde der erste Entdecker!</h2>
 			<p>Die Ruhmeshalle wartet darauf, mit deinen Erfolgen gefüllt zu werden.</p>
-			<p class="motivation-text">Starte jetzt dein Tier-Abenteuer und sichere dir einen Platz in der Bestenliste!</p>
+			<p class="motivation-text">
+				Starte jetzt dein Tier-Abenteuer und sichere dir einen Platz in der Bestenliste!
+			</p>
 		</div>
 	{/if}
 </div>
@@ -125,7 +130,7 @@
 		background: linear-gradient(145deg, #fff6e5, #ffe0b2);
 		border-radius: 30px;
 		border: 6px solid var(--jungle-primary);
-		box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 		padding: 3rem;
 		max-width: 1200px;
 		margin: 2rem auto;
@@ -163,7 +168,7 @@
 		background: white;
 		padding: 2rem;
 		border-radius: 20px;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
 
 	.filter-group {
@@ -178,7 +183,8 @@
 		font-weight: 500;
 	}
 
-	select, input {
+	select,
+	input {
 		font-size: 1.4rem;
 		padding: 1rem 1.5rem;
 		border: 3px solid var(--jungle-primary);
@@ -188,7 +194,8 @@
 		transition: all 0.3s ease;
 	}
 
-	select:focus, input:focus {
+	select:focus,
+	input:focus {
 		outline: none;
 		box-shadow: 0 0 0 3px rgba(var(--jungle-primary-rgb), 0.3);
 	}
@@ -197,7 +204,7 @@
 		background: white;
 		padding: 2rem;
 		border-radius: 20px;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		overflow-x: auto;
 	}
 
@@ -237,9 +244,15 @@
 		color: var(--jungle-primary);
 	}
 
-	tr.gold { background: rgba(255, 215, 0, 0.1); }
-	tr.silver { background: rgba(192, 192, 192, 0.1); }
-	tr.bronze { background: rgba(205, 127, 50, 0.1); }
+	tr.gold {
+		background: rgba(255, 215, 0, 0.1);
+	}
+	tr.silver {
+		background: rgba(192, 192, 192, 0.1);
+	}
+	tr.bronze {
+		background: rgba(205, 127, 50, 0.1);
+	}
 
 	tr:hover {
 		background: rgba(var(--jungle-primary-rgb), 0.1);
@@ -253,7 +266,7 @@
 		background: white;
 		border-radius: 20px;
 		margin-top: 2rem;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
 
 	.empty-state p {
@@ -279,11 +292,13 @@
 			padding: 1.5rem;
 		}
 
-		select, input {
+		select,
+		input {
 			min-width: 100%;
 		}
 
-		td, th {
+		td,
+		th {
 			padding: 1rem;
 			font-size: 1.4rem;
 		}
