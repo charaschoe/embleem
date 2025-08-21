@@ -295,17 +295,30 @@ npm run dev
 
 ### ⚙️ Konfiguration
 
-Erstelle eine `.env`-Datei im Hauptverzeichnis:
+Erstelle eine `.env`-Datei im Hauptverzeichnis basierend auf `.env.example`:
 
 ```env
-# API Keys
-VITE_UNSPLASH_ACCESS_KEY=dein_unsplash_key
-VITE_WIKIPEDIA_USER_AGENT=embleem/1.0
+# API Keys - Server-side only (secure)
+UNSPLASH_ACCESS_KEY=dein_unsplash_key
 
-# Entwicklungseinstellungen
+# Entwicklungseinstellungen (optional)
 VITE_DEV_MODE=true
 VITE_API_TIMEOUT=8000
 ```
+
+⚠️ **Sicherheitshinweis**:
+
+- **Nie** API-Keys mit `VITE_` Prefix verwenden - diese werden im Client-Code sichtbar!
+- Nutze `UNSPLASH_ACCESS_KEY` (ohne VITE\_) für sichere Server-seitige API-Aufrufe
+- Die App verwendet einen sicheren API-Proxy um API-Keys zu schützen
+
+## 🔒 Sicherheitsfeatures
+
+- **API-Key Schutz**: Unsplash API-Key wird nur server-seitig verwendet
+- **Input-Validierung**: Alle Benutzereingaben werden sanitisiert
+- **Content Security Policy**: Schutz vor XSS-Angriffen
+- **Path Traversal Schutz**: Sichere Dateipfad-Behandlung
+- **Security Headers**: X-Frame-Options, X-Content-Type-Options, etc.
 
 ## 📜 Projektkontext
 

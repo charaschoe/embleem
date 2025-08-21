@@ -1,9 +1,13 @@
 export async function fetchUnsplashImage(query) {
-	const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
-	const apiUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}%20animal%20portrait&orientation=landscape&content_filter=high&per_page=30&client_id=${accessKey}`;
+	// Use secure server-side API proxy instead of direct API call
+	const url = new URL('/api/unsplash', window.location.origin);
+	url.searchParams.append('query', `${query} animal portrait`);
+	url.searchParams.append('orientation', 'landscape');
+	url.searchParams.append('content_filter', 'high');
+	url.searchParams.append('per_page', '30');
 
 	try {
-		const response = await fetch(apiUrl);
+		const response = await fetch(url.toString());
 		if (!response.ok) {
 			return getLocalImagePath(query);
 		}
@@ -24,7 +28,18 @@ export async function fetchUnsplashImage(query) {
 }
 
 function getLocalImagePath(query) {
-	return `/animals/${query.toLowerCase().replace(' ', '-')}.jpg`;
+	// Sanitize the query to prevent path traversal attacks
+	const sanitizedQuery = query
+		.replace(/[^a-zA-Z0-9\s-äöüßÄÖÜ]/g, '') // Remove potentially dangerous characters
+		.replace(/\s+/g, '-') // Replace spaces with hyphens
+		.toLowerCase()
+		.substring(0, 50); // Limit length to prevent excessively long filenames
+
+	if (!sanitizedQuery) {
+		return '/animals/default.jpg'; // Fallback for empty/invalid names
+	}
+
+	return `/animals/${sanitizedQuery}.jpg`;
 }
 
 function filterAnimalPortraits(results) {
@@ -449,4 +464,4 @@ export const animalList = [
 			}
 		}
 	}
-]; 
+];

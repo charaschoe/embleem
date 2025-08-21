@@ -24,7 +24,7 @@ export async function fetchUnsplashImage(query: string): Promise<string> {
 			return getLocalImagePath(query);
 		}
 
-		const data = await response.json() as UnsplashResponse;
+		const data = (await response.json()) as UnsplashResponse;
 		const filteredResults = filterAnimalPortraits(data.results);
 
 		if (filteredResults.length > 0) {
