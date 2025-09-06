@@ -320,6 +320,17 @@ VITE_API_TIMEOUT=8000
 - **Path Traversal Schutz**: Sichere Dateipfad-Behandlung
 - **Security Headers**: X-Frame-Options, X-Content-Type-Options, etc.
 
+### 🔧 CodeQL Security Workflow
+
+Für kontinuierliche Sicherheitsanalyse nutzt das Projekt CodeQL Advanced Setup:
+
+- **Automatische Scans**: Bei jedem Push/PR auf master branch
+- **Wöchentliche Scans**: Freitags um 7:45 UTC  
+- **Sprachen**: JavaScript/TypeScript
+- **Abdeckung**: Security-extended & Quality Queries
+
+> ⚠️ **Wichtiger Hinweis**: Bei Workflow-Fehlern siehe [`CODEQL_FIX_INSTRUCTIONS.md`](./CODEQL_FIX_INSTRUCTIONS.md) für die Lösung von Konfigurationskonflikten zwischen Default- und Advanced-Setup.
+
 ## 📜 Projektkontext
 
 Entwickelt im Wintersemester 2024/25 bei Prof. Fabian Rauch ([@caitoor](https://github.com/caitoor)) an der HfG Schwäbisch Gmünd. Zielgruppe: Kinder von 6-8 Jahren.
