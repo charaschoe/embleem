@@ -45,9 +45,11 @@ This document summarizes the security vulnerabilities identified and fixed in th
 
 ### Fixed:
 - **brace-expansion**: Updated to fix RegEx DoS vulnerability (2 vulnerabilities reduced to 0)
+- **axios**: Updated from 1.6.7 to 1.12.2 to fix DoS vulnerability (GHSA-4hjh-wcwx-xvwj) - High severity CVSS 7.5
+- **vite**: Updated to fix middleware file serving vulnerabilities (2 vulnerabilities fixed)
 
 ### Remaining:
-- **cookie** package: 2 low severity vulnerabilities
+- **cookie** package: 3 low severity vulnerabilities
 - Requires breaking changes to SvelteKit to fix (not recommended for production app)
 
 ## Files Modified
