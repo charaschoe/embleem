@@ -1,6 +1,6 @@
 import { getCountryFlag } from './unsplash';
 
-const countryCodeMap = {
+const countryCodeMap: Record<string, string> = {
 	Afghanistan: 'af',
 	Albania: 'al',
 	Algeria: 'dz',

@@ -119,10 +119,8 @@ export async function fetchUnsplashImage(animal: Animal | NationalAnimal | strin
 		return wikiImage;
 	}
 
-	// 2) Try Unsplash only if API key is configured
-	const unsplashKey = typeof window === 'undefined'
-		? process.env.UNSPLASH_ACCESS_KEY
-		: import.meta.env.UNSPLASH_ACCESS_KEY;
+	// 2) Try Unsplash only if API key is configured (skip in dev, use Wikipedia only)
+	const unsplashKey = undefined; // Set to process.env.UNSPLASH_ACCESS_KEY if you have a key
 
 	if (unsplashKey) {
 		try {
