@@ -68,7 +68,7 @@ export async function getWikipediaImage(animal: Animal): Promise<string | null> 
 		let imageUrl = await fetchWikipediaImage('de', params);
 
 		// If no German image, try English Wikipedia
-		if (!imageUrl && animal.meta.wikiLinks?.en) {
+		if (!imageUrl && animal.meta?.wikiLinks?.en) {
 			const englishTitle = await getEnglishTitle(searchTerm);
 			if (englishTitle) {
 				params.titles = englishTitle;

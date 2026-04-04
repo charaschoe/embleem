@@ -194,14 +194,65 @@ const countryCodeMap = {
 	Vietnam: 'vn',
 	Yemen: 'ye',
 	Zambia: 'zm',
-	Zimbabwe: 'zw'
+	Zimbabwe: 'zw',
+	// German country name mappings
+	Deutschland: 'de',
+	Frankreich: 'fr',
+	Polen: 'pl',
+	Belgien: 'be',
+	Albanien: 'al',
+	Norwegen: 'no',
+	Singapur: 'sg',
+	Schweden: 'se',
+	Tschechien: 'cz',
+	Finnland: 'fi',
+	Mexiko: 'mx',
+	Indien: 'in',
+	Indonesien: 'id',
+	Südafrika: 'za',
+	Russland: 'ru',
+	Australien: 'au'
 };
 
-export function getCountryCode(countryName) {
+export function getCountryCode(countryName: string): string {
 	return countryCodeMap[countryName] || 'unknown';
 }
 
-export async function getCountryFlagUrl(countryName) {
+export function getCountryCodeByGermanName(name: string): string {
+	const germanNameMap: Record<string, string> = {
+		Deutschland: 'de',
+		Frankreich: 'fr',
+		Polen: 'pl',
+		Belgien: 'be',
+		Albanien: 'al',
+		Wales: 'gb',
+		Schottland: 'gb',
+		England: 'gb',
+		Norwegen: 'no',
+		Singapur: 'sg',
+		Schweden: 'se',
+		Tschechien: 'cz',
+		Finnland: 'fi',
+		Mexiko: 'mx',
+		'Sri Lanka': 'lk',
+		Indien: 'in',
+		Malaysia: 'my',
+		Bhutan: 'bt',
+		Guatemala: 'gt',
+		Indonesien: 'id',
+		Pakistan: 'pk',
+		Südafrika: 'za',
+		Botswana: 'bw',
+		Nepal: 'np',
+		Russland: 'ru',
+		Australien: 'au',
+		Chile: 'cl',
+		USA: 'us'
+	};
+	return germanNameMap[name] || 'unknown';
+}
+
+export async function getCountryFlagUrl(countryName: string): Promise<string> {
 	const countryCode = getCountryCode(countryName);
 	if (countryCode === 'unknown') {
 		return '/default-flag.png';

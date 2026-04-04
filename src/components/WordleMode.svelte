@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
-	import { animalList } from '../lib/animalList.js';
-	import { getAnimalInfo } from '../lib/wikipedia.js';
+	import { animalList } from '$lib/animalList';
+	import { getAnimalInfo } from '$lib/wikipedia';
 
 	export let correctAnimal = '';
 	export let highscoreStore;

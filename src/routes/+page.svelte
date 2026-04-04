@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fetchUnsplashImage } from '$lib/unsplash.js';
-	import { goto } from '$app/navigation';
-	import { animalList } from '$lib/animalList.js';
+import { fetchUnsplashImage } from '$lib/unsplash';
+import { goto } from '$app/navigation';
+import { animalList } from '$lib/animalList';
 
 	let backgroundImage = '';
 	let showApiLimitMessage = false;

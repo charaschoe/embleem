@@ -1,4 +1,5 @@
 import type { Animal } from './types';
+import type { NationalAnimal } from './animalList';
 import { validateImage, buildSearchQuery } from './imageValidation';
 
 const FLAGCDN_BASE_URL = 'https://flagcdn.com';
@@ -24,7 +25,32 @@ interface UnsplashResponse {
 	total_pages: number;
 }
 
-export async function fetchUnsplashImage(animal: Animal): Promise<string> {
+// Fetch by raw search query string (for homepage backgrounds etc.)
+async function fetchByQuery(query: string): Promise<string> {
+	const url = new URL('/api/unsplash', window.location.origin);
+	url.searchParams.append('query', query);
+	url.searchParams.append('orientation', 'landscape');
+	url.searchParams.append('content_filter', 'high');
+	url.searchParams.append('per_page', '30');
+
+	try {
+		const response = await fetch(url.toString());
+		if (!response.ok) return '/animals/default.jpg';
+		const data: UnsplashResponse = await response.json();
+		if (data.results?.length) return data.results[0].urls.regular;
+		return '/animals/default.jpg';
+	} catch {
+		return '/animals/default.jpg';
+	}
+}
+
+export async function fetchUnsplashImage(animal: Animal | NationalAnimal): Promise<string>;
+export async function fetchUnsplashImage(query: string): Promise<string>;
+export async function fetchUnsplashImage(animalOrQuery: Animal | NationalAnimal | string): Promise<string> {
+	if (typeof animalOrQuery === 'string') {
+		return fetchByQuery(animalOrQuery);
+	}
+	const animal = animalOrQuery as Animal;
 	const searchQuery = buildSearchQuery(animal);
 	if (!searchQuery) {
 		console.debug('No search query generated');

@@ -1,13 +1,28 @@
 <script>
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
-	import { animalList } from '../lib/animalList.js';
-	import { getAnimalInfo } from '../lib/wikipedia.js';
-	import { highscoreStore } from '../lib/highscoreStore.js';
-	import { getAnimalHint } from '../lib/imageValidation';
-	import { fetchUnsplashImage } from '../lib/unsplash';
+	import { animalList } from '$lib/animalList';
+	import { getAnimalInfo } from '$lib/wikipedia';
+	import { highscoreStore } from '$lib/highscoreStore';
+import { getAnimalHint } from '$lib/imageValidation';
+import { fetchUnsplashImage } from '$lib/unsplash';
 
-	export let animal;
+// Module-level image loader -- needed by both onMount and resetGame
+async function loadImage(url) {
+	try {
+		const img = new Image();
+		await new Promise((resolve, reject) => {
+			img.onload = resolve;
+			img.onerror = reject;
+			img.src = url;
+		});
+		return url;
+	} catch {
+		return null;
+	}
+}
+
+export let animal;
 	export let imageUrl;
 	export let country;
 	export let highscore;
@@ -129,20 +144,6 @@
 		}
 
 		hint = getAnimalHint(currentAnimal);
-
-		const loadImage = async (url) => {
-			try {
-				const img = new Image();
-				await new Promise((resolve, reject) => {
-					img.onload = resolve;
-					img.onerror = reject;
-					img.src = url;
-				});
-				return url;
-			} catch {
-				return null;
-			}
-		};
 
 		try {
 			// Try Wikipedia first

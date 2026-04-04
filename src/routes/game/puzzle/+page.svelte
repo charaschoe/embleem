@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import PuzzleGrid from '../../../components/PuzzleGrid.svelte';
-	import { highscoreStore } from '../../../lib/highscoreStore.js';
-	import { animalList } from '../../../lib/animalList.js';
-	import { fetchUnsplashImage } from '../../../lib/unsplash';
-	import type { Animal } from '../../../lib/types';
+import { highscoreStore } from '$lib/highscoreStore';
+import { animalList } from '$lib/animalList';
+import { fetchUnsplashImage } from '$lib/unsplash';
+import type { NationalAnimal } from '$lib/animalList';
 
-	let currentAnimal: Animal | undefined;
+	let currentAnimal: NationalAnimal | undefined;
 	let imageUrl = '';
 
 	onMount(async () => {

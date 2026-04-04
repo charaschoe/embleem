@@ -24,10 +24,11 @@ export interface AnimalMeta {
 export interface Animal {
 	name: string;
 	country: string;
-	scientific: string;
+	scientific?: string;
 	category: string;
-	keywords: AnimalKeywords;
+	keywords?: AnimalKeywords;
 	synonyms: string[];
-	searchStrategy: SearchStrategy;
-	meta: AnimalMeta;
+	searchStrategy?: SearchStrategy;
+	searchTerms?: string;
+	meta?: AnimalMeta;
 }
