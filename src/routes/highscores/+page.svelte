@@ -1,5 +1,4 @@
-<script>
-	import { highscoreStore } from '$lib/highscoreStore.js';
+<script lang="ts">
 
 	let selectedMode = 'all';
 	let selectedTimeframe = 'all';

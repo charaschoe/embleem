@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import WordleMode from '../../../components/WordleMode.svelte';
 	import { highscoreStore } from '$lib/highscoreStore';
