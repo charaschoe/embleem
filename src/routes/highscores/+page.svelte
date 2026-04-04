@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { highscoreStore } from '$lib/highscoreStore';
-
-	let selectedMode = 'all';
+<script lang="ts">
+import { highscoreStore } from '$lib/highscoreStore';
 	let selectedTimeframe = 'all';
 	let searchQuery = '';
 
