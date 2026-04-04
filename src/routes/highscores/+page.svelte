@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { highscoreStore } from '$lib/highscoreStore';
 
 	let selectedMode = 'all';
 	let selectedTimeframe = 'all';
 	let searchQuery = '';
 
 	$: filteredHighscores = $highscoreStore
-		.filter((score) => {
+		.filter((score: any) => {
 			if (selectedMode !== 'all' && score.mode !== selectedMode) return false;
 			if (selectedTimeframe !== 'all') {
 				const scoreDate = new Date(score.date);
