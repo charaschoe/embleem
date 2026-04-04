@@ -1,6 +1,7 @@
 <script lang="ts">
-<script lang="ts">
-import { highscoreStore } from '$lib/highscoreStore';
+	import { highscoreStore } from '$lib/highscoreStore';
+
+	let selectedMode = 'all';
 	let selectedTimeframe = 'all';
 	let searchQuery = '';
 
@@ -69,7 +70,7 @@ import { highscoreStore } from '$lib/highscoreStore';
 			<input
 				id="search"
 				type="text"
-				bind:value={searchQuery}
+			 bind:value={searchQuery}
 				placeholder="Name des Entdeckers..."
 			/>
 		</div>
