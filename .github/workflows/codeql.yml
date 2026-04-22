@@ -1,5 +1,5 @@
 # CodeQL Advanced Security Analysis
-# 
+#
 # ⚠️  IMPORTANT: This advanced configuration requires GitHub's default CodeQL setup
 # to be DISABLED in repository Settings > Security > Code scanning.
 # Both cannot run simultaneously due to SARIF file conflicts.
@@ -49,8 +49,8 @@ jobs:
         include:
           # Analyze JavaScript and TypeScript files in this repository
           - language: javascript-typescript
-            build-mode: none  # No build required for interpreted languages
-            queries: security-extended,security-and-quality  # Comprehensive security analysis
+            build-mode: none # No build required for interpreted languages
+            queries: security-extended,security-and-quality # Comprehensive security analysis
         # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
         # Use `c-cpp` to analyze code written in C, C++ or both
         # Use 'java-kotlin' to analyze code written in Java, Kotlin or both

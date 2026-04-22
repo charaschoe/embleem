@@ -103,7 +103,9 @@ interface UnsplashResponse {
  * Priority: 1) Wikipedia image, 2) Unsplash (if API key configured), 3) SVG placeholder
  * Also accepts a plain string query for homepage backgrounds.
  */
-export async function fetchUnsplashImage(animal: Animal | NationalAnimal | string): Promise<string> {
+export async function fetchUnsplashImage(
+	animal: Animal | NationalAnimal | string
+): Promise<string> {
 	// If passed a plain string, try to find a Wikipedia image for any animal with that name,
 	// otherwise use a placeholder
 	if (typeof animal === 'string') {
@@ -137,7 +139,9 @@ export async function fetchUnsplashImage(animal: Animal | NationalAnimal | strin
 				if (data.results?.length) {
 					const validPhotos = data.results
 						.filter((p) => !p.black_and_white)
-						.filter((p) => validateImage(p.description || p.alt_description || '', animal as Animal));
+						.filter((p) =>
+							validateImage(p.description || p.alt_description || '', animal as Animal)
+						);
 
 					if (validPhotos.length) {
 						return validPhotos[0].urls.regular;

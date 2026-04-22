@@ -120,6 +120,6 @@ const animalData: NationalAnimal[] = [
 		searchTerms: 'sri lanka lion flag symbol national',
 		category: 'heraldic'
 	}
- ];
+];
 
 export const animalList: NationalAnimal[] = animalData;

@@ -325,7 +325,7 @@ VITE_API_TIMEOUT=8000
 Für kontinuierliche Sicherheitsanalyse nutzt das Projekt CodeQL Advanced Setup:
 
 - **Automatische Scans**: Bei jedem Push/PR auf master branch
-- **Wöchentliche Scans**: Freitags um 7:45 UTC  
+- **Wöchentliche Scans**: Freitags um 7:45 UTC
 - **Sprachen**: JavaScript/TypeScript
 - **Abdeckung**: Security-extended & Quality Queries
 

@@ -4,25 +4,25 @@
 	import { animalList } from '$lib/animalList';
 	import { getAnimalInfo } from '$lib/wikipedia';
 	import { highscoreStore } from '$lib/highscoreStore';
-import { getAnimalHint } from '$lib/imageValidation';
-import { fetchUnsplashImage } from '$lib/unsplash';
+	import { getAnimalHint } from '$lib/imageValidation';
+	import { fetchUnsplashImage } from '$lib/unsplash';
 
-// Module-level image loader -- needed by both onMount and resetGame
-async function loadImage(url) {
-	try {
-		const img = new Image();
-		await new Promise((resolve, reject) => {
-			img.onload = resolve;
-			img.onerror = reject;
-			img.src = url;
-		});
-		return url;
-	} catch {
-		return null;
+	// Module-level image loader -- needed by both onMount and resetGame
+	async function loadImage(url) {
+		try {
+			const img = new Image();
+			await new Promise((resolve, reject) => {
+				img.onload = resolve;
+				img.onerror = reject;
+				img.src = url;
+			});
+			return url;
+		} catch {
+			return null;
+		}
 	}
-}
 
-export let animal;
+	export let animal;
 	export let imageUrl;
 	export let country;
 	export let highscore;
@@ -673,7 +673,8 @@ export let animal;
 
 			<div class="grid-container {difficulty}">
 				{#each revealedTiles as revealed, i}
-					<div
+					<button
+						type="button"
 						class="grid-item {revealed ? 'revealed' : ''}"
 						on:click={() => {
 							if (!revealed && !isCorrect) {
@@ -681,6 +682,8 @@ export let animal;
 								counter++;
 							}
 						}}
+						aria-label="Tile {i + 1}"
+						disabled={revealed || isCorrect}
 					>
 						{#if revealed}
 							<div
@@ -694,7 +697,7 @@ export let animal;
 						{:else}
 							{i + 1}
 						{/if}
-					</div>
+					</button>
 				{/each}
 			</div>
 
@@ -973,10 +976,6 @@ export let animal;
 		flex-direction: column;
 		align-items: center;
 		margin: 1.5rem 0;
-		background: white;
-		padding: 1.5rem;
-		border-radius: 15px;
-		border: 3px solid var(--jungle-primary);
 	}
 
 	.autofill-toggle {
@@ -991,9 +990,13 @@ export let animal;
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-		width: auto;
-		min-width: 250px;
+		min-width: 280px;
 		justify-content: center;
+	}
+
+	.autofill-toggle:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px var(--jungle-shadow);
 	}
 
 	.autofill-toggle.active {
@@ -1006,14 +1009,20 @@ export let animal;
 	}
 
 	.autofill-info {
-		margin-top: 1rem;
-		background: var(--jungle-light);
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		margin-top: 8px;
+		background: white;
+		border: 2px solid var(--jungle-primary);
 		border-radius: 12px;
 		padding: 1rem;
-		width: 100%;
-		max-width: 500px;
+		width: 300px;
 		text-align: center;
-		animation: fadeIn 0.3s ease-out;
+		z-index: 100;
+		box-shadow: 0 8px 24px var(--jungle-shadow);
+		animation: fadeIn 0.2s ease-out;
 	}
 
 	.autofill-info p {
@@ -1021,6 +1030,17 @@ export let animal;
 		color: var(--jungle-text);
 		margin: 0;
 		line-height: 1.5;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(-4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
 	}
 
 	.player-info {
@@ -1192,10 +1212,14 @@ export let animal;
 		color: #ffffff;
 		transition: all 0.3s ease;
 		z-index: 1;
+		border: none;
+		padding: 0;
+		cursor: pointer;
 	}
 
 	.grid-item.revealed {
 		background: transparent;
+		cursor: default;
 	}
 
 	.grid-item:not(.revealed) {
@@ -1206,6 +1230,10 @@ export let animal;
 	.grid-item:not(.revealed):hover {
 		background: #2a2a2a;
 		transform: scale(0.98);
+	}
+
+	.grid-item:disabled {
+		cursor: not-allowed;
 	}
 
 	@media (max-width: 768px) {

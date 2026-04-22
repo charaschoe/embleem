@@ -70,7 +70,7 @@
 			<input
 				id="search"
 				type="text"
-			 bind:value={searchQuery}
+				bind:value={searchQuery}
 				placeholder="Name des Entdeckers..."
 			/>
 		</div>
