@@ -71,10 +71,10 @@ function generatePlaceholderUrl(animalName: string): string {
 	const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'>
 		<rect fill='${bg}' width='800' height='600'/>
 		<text x='400' y='280' font-family='Arial' font-size='48' fill='white' text-anchor='middle'>🐾</text>
-		<text x='400' y='350' font-family='Arial' font-size='32' fill='white' text-anchor='middle'>${encodeURIComponent(animalName)}</text>
+		<text x='400' y='350' font-family='Arial' font-size='32' fill='white' text-anchor='middle'>${animalName}</text>
 		<text x='400' y='400' font-family='Arial' font-size='20' fill='rgba(255,255,255,0.7)' text-anchor='middle'>Nationaltier finden!</text>
 	</svg>`;
-	return `data:image/svg+xml,${svg}`;
+	return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 interface UnsplashPhoto {

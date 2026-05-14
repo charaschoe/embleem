@@ -3,7 +3,6 @@
 	import confetti from 'canvas-confetti';
 	import { animalList } from '$lib/animalList';
 	import { getAnimalInfo } from '$lib/wikipedia';
-	import { highscoreStore } from '$lib/highscoreStore';
 	import { getAnimalHint } from '$lib/imageValidation';
 	import { fetchUnsplashImage } from '$lib/unsplash';
 
@@ -90,9 +89,13 @@
 		}
 	}
 
-	$: if (imageUrl) {
-		document.documentElement.style.setProperty('--puzzle-image', `url(${imageUrl})`);
+	/** @param {string | null | undefined} url */
+	function toCssUrl(url) {
+		if (!url) return 'none';
+		return `url("${url.replace(/["\\]/g, '\\$&')}")`;
 	}
+
+	$: puzzleImage = toCssUrl(imageUrl);
 
 	const placeholderNames = [
 		'Kleiner Panda',
@@ -209,9 +212,9 @@
 	}
 
 	function saveHighscore(score) {
-		if (highscoreStore) {
+		if (highscore) {
 			lastScore = score;
-			highscoreStore.update((scores) => [
+			highscore.update((scores) => [
 				...scores,
 				{
 					name: playerName,
@@ -671,7 +674,7 @@
 				</div>
 			{/if}
 
-			<div class="grid-container {difficulty}">
+			<div class="grid-container {difficulty}" style:--puzzle-image={puzzleImage}>
 				{#each revealedTiles as revealed, i}
 					<button
 						type="button"
@@ -689,11 +692,11 @@
 							<div
 								class="image-container"
 								style="
-									background-image: url({imageUrl}); 
+									background-image: {puzzleImage};
 									background-position: {-100 * (i % cols)}% {-100 * Math.floor(i / cols)}%;
 									background-size: {cols * 100}% {rows * 100}%;
 								"
-							/>
+							></div>
 						{:else}
 							{i + 1}
 						{/if}
@@ -867,7 +870,6 @@
 		width: 100%;
 		max-width: 350px;
 		margin-top: 1.5rem;
-		animation: float 2s ease-in-out infinite;
 	}
 
 	@keyframes float {
@@ -1288,6 +1290,82 @@
 		button {
 			width: 100%;
 		}
+
+		.status-item {
+			width: 100%;
+			max-width: 300px;
+		}
+
+		.input-group {
+			flex-direction: column;
+		}
+
+		.guess-button {
+			width: 100%;
+		}
+
+		.success {
+			padding: 1.5rem;
+		}
+
+		.success-header h3 {
+			font-size: 1.8rem;
+		}
+
+		.success-text {
+			font-size: 1.4rem;
+		}
+
+		.final-score {
+			font-size: 1.4rem;
+			padding: 0.8rem 1.5rem;
+		}
+
+		.countdown-container {
+			padding: 2rem;
+		}
+
+		.countdown-text {
+			font-size: 1.4rem;
+		}
+
+		.countdown-number {
+			font-size: 2.4rem;
+			width: 80px;
+			height: 80px;
+		}
+
+		.player-info {
+			flex-direction: column;
+			text-align: center;
+			padding: 1rem;
+		}
+
+		.player-name {
+			align-items: center;
+		}
+
+		.welcome-text {
+			font-size: 1.4rem;
+		}
+
+		.mission-text {
+			font-size: 1.4rem;
+		}
+
+		.autofill-toggle {
+			font-size: 1.4rem;
+			padding: 0.8rem 1.5rem;
+			min-width: 200px;
+		}
+
+		.autofill-info {
+			max-width: 100%;
+		}
+
+		.autofill-info p {
+			font-size: 1.4rem;
+		}
 	}
 
 	.hint-box {
@@ -1444,81 +1522,7 @@
 	}
 
 	.api-limit-details p {
-		.status-item {
-			width: 100%;
-			max-width: 300px;
-		}
-
-		.input-group {
-			flex-direction: column;
-		}
-
-		.guess-button {
-			width: 100%;
-		}
-
-		.success {
-			padding: 1.5rem;
-		}
-
-		.success-header h3 {
-			font-size: 1.8rem;
-		}
-
-		.success-text {
-			font-size: 1.4rem;
-		}
-
-		.final-score {
-			font-size: 1.4rem;
-			padding: 0.8rem 1.5rem;
-		}
-
-		.countdown-container {
-			padding: 2rem;
-		}
-
-		.countdown-text {
-			font-size: 1.4rem;
-		}
-
-		.countdown-number {
-			font-size: 2.4rem;
-			width: 80px;
-			height: 80px;
-		}
-
-		.player-info {
-			flex-direction: column;
-			text-align: center;
-			padding: 1rem;
-		}
-
-		.player-name {
-			align-items: center;
-		}
-
-		.welcome-text {
-			font-size: 1.4rem;
-		}
-
-		.mission-text {
-			font-size: 1.4rem;
-		}
-
-		.autofill-toggle {
-			font-size: 1.4rem;
-			padding: 0.8rem 1.5rem;
-			min-width: 200px;
-		}
-
-		.autofill-info {
-			max-width: 100%;
-		}
-
-		.autofill-info p {
-			font-size: 1.4rem;
-		}
+		margin-bottom: 0;
 	}
 
 	.image-container {

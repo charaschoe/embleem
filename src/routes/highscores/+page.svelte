@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { highscoreStore } from '$lib/highscoreStore';
+	import { highscoreStore, highscoreSyncStatus, type Highscore } from '$lib/highscoreStore';
 
 	let selectedMode = 'all';
 	let selectedTimeframe = 'all';
 	let searchQuery = '';
 
 	$: filteredHighscores = $highscoreStore
-		.filter((score: any) => {
+		.filter((score: Highscore) => {
 			if (selectedMode !== 'all' && score.mode !== selectedMode) return false;
 			if (selectedTimeframe !== 'all') {
 				const scoreDate = new Date(score.date);
@@ -30,10 +30,10 @@
 			}
 			return true;
 		})
-		.sort((a, b) => b.score - a.score)
+		.sort((a: Highscore, b: Highscore) => b.score - a.score)
 		.slice(0, 100);
 
-	function getScoreClass(score) {
+	function getScoreClass(score: number) {
 		if (score >= 90) return 'gold';
 		if (score >= 70) return 'silver';
 		if (score >= 50) return 'bronze';
@@ -44,6 +44,15 @@
 <div class="puzzle-mode">
 	<h1>🏆 Ruhmeshalle der Entdecker</h1>
 	<p class="subtitle">Hier findest du die erfolgreichsten Tier-Entdecker!</p>
+	<div class:error={$highscoreSyncStatus.error} class="sync-status">
+		{#if $highscoreSyncStatus.configured}
+			{$highscoreSyncStatus.syncing
+				? 'Cloud-Bestenliste wird synchronisiert...'
+				: $highscoreSyncStatus.error || 'Cloud-Bestenliste verbunden'}
+		{:else}
+			Lokale Bestenliste
+		{/if}
+	</div>
 
 	<div class="filter-container">
 		<div class="filter-group">
@@ -155,8 +164,25 @@
 		font-size: 1.4rem;
 		color: var(--jungle-text);
 		text-align: center;
-		margin-bottom: 3rem;
+		margin-bottom: 1rem;
 		line-height: 1.5;
+	}
+
+	.sync-status {
+		width: fit-content;
+		margin: 0 auto 3rem;
+		padding: 0.7rem 1.2rem;
+		border: 2px solid var(--jungle-primary);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.85);
+		color: var(--jungle-primary);
+		font-size: 1rem;
+		font-weight: 700;
+	}
+
+	.sync-status.error {
+		border-color: #b00020;
+		color: #b00020;
 	}
 
 	.filter-container {
